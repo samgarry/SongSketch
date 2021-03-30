@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,6 +14,8 @@
 		87031BB42613D28700D5F7B9 /* SongSketch.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 87031BB22613D28700D5F7B9 /* SongSketch.xcdatamodeld */; };
 		87031BB62613D28A00D5F7B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 87031BB52613D28A00D5F7B9 /* Assets.xcassets */; };
 		87031BB92613D28A00D5F7B9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 87031BB72613D28A00D5F7B9 /* LaunchScreen.storyboard */; };
+		87031BC22613D2AE00D5F7B9 /* Conductor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87031BC12613D2AE00D5F7B9 /* Conductor.swift */; };
+		87031BC72613D4A300D5F7B9 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 87031BC62613D4A300D5F7B9 /* AudioKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,7 @@
 		87031BB52613D28A00D5F7B9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		87031BB82613D28A00D5F7B9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		87031BBA2613D28A00D5F7B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		87031BC12613D2AE00D5F7B9 /* Conductor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conductor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				87031BC72613D4A300D5F7B9 /* AudioKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +65,7 @@
 				87031BA92613D28700D5F7B9 /* AppDelegate.swift */,
 				87031BAB2613D28700D5F7B9 /* SceneDelegate.swift */,
 				87031BAD2613D28700D5F7B9 /* ViewController.swift */,
+				87031BC12613D2AE00D5F7B9 /* Conductor.swift */,
 				87031BAF2613D28700D5F7B9 /* Main.storyboard */,
 				87031BB52613D28A00D5F7B9 /* Assets.xcassets */,
 				87031BB72613D28A00D5F7B9 /* LaunchScreen.storyboard */,
@@ -86,6 +91,9 @@
 			dependencies = (
 			);
 			name = SongSketch;
+			packageProductDependencies = (
+				87031BC62613D4A300D5F7B9 /* AudioKit */,
+			);
 			productName = SongSketch;
 			productReference = 87031BA62613D28700D5F7B9 /* SongSketch.app */;
 			productType = "com.apple.product-type.application";
@@ -113,6 +121,9 @@
 				Base,
 			);
 			mainGroup = 87031B9D2613D28700D5F7B9;
+			packageReferences = (
+				87031BC52613D4A300D5F7B9 /* XCRemoteSwiftPackageReference "AudioKit" */,
+			);
 			productRefGroup = 87031BA72613D28700D5F7B9 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -142,6 +153,7 @@
 			files = (
 				87031BB42613D28700D5F7B9 /* SongSketch.xcdatamodeld in Sources */,
 				87031BAE2613D28700D5F7B9 /* ViewController.swift in Sources */,
+				87031BC22613D2AE00D5F7B9 /* Conductor.swift in Sources */,
 				87031BAA2613D28700D5F7B9 /* AppDelegate.swift in Sources */,
 				87031BAC2613D28700D5F7B9 /* SceneDelegate.swift in Sources */,
 			);
@@ -343,6 +355,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		87031BC52613D4A300D5F7B9 /* XCRemoteSwiftPackageReference "AudioKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AudioKit/AudioKit";
+			requirement = {
+				branch = "v5-main";
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		87031BC62613D4A300D5F7B9 /* AudioKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 87031BC52613D4A300D5F7B9 /* XCRemoteSwiftPackageReference "AudioKit" */;
+			productName = AudioKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		87031BB22613D28700D5F7B9 /* SongSketch.xcdatamodeld */ = {
