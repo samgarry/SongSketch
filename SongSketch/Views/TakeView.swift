@@ -10,9 +10,10 @@ import UIKit
 class TakeView: UITableViewCell {
 
     //Buttons
-    var playButton: UIButton!
+    var playPauseButton: UIButton!
     var addNewTakeButton: UIButton!
     var takeLabel: UILabel!
+    var sectionLabel: UILabel!
     
     //UI Symbol Variables
     var plus = UIImage()
@@ -21,7 +22,7 @@ class TakeView: UITableViewCell {
     let configuration = UIImage.SymbolConfiguration(pointSize: 40, weight: .regular, scale: .medium)
     
     //Button Functionality Closures -- Send these to the section view controller
-    var recordTapped: (() -> Void)?
+    var recordTapped: ((UITableViewCell) -> Void)?
     var playTapped: (() -> Void)?
     
     func createSymbols() {
@@ -51,7 +52,8 @@ class TakeView: UITableViewCell {
         createSymbols()
         
         //Add Buttons
-        createTitleLabel()
+        createTakeLabel()
+        createSectionLabel()
         createPlayButton()
         createNewTakeButton()
     }
@@ -60,13 +62,14 @@ class TakeView: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func set(title: String) {
-        takeLabel.text = title
+    func set(label: String, section: String) {
+        takeLabel.text = label
+        sectionLabel.text = section
     }
     
     //Function that calls the recordTapped closure
     @objc func pressRecord() {
-        recordTapped?()
+        recordTapped?(self)
     }
     
     //Function that calls the playTapped closure
@@ -74,7 +77,19 @@ class TakeView: UITableViewCell {
         playTapped?()
     }
     
-    func createTitleLabel() {
+    func updateButton(playing: Bool) {
+        if playing {
+            playPauseButton.setImage(pause, for: .normal)
+            playPauseButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
+        }
+        else {
+            playPauseButton.setImage(play, for: .normal)
+            playPauseButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
+        }
+    }
+    
+    
+    func createTakeLabel() {
         takeLabel = UILabel()
         takeLabel.font = UIFont(name: "Courier New", size: 22)
         takeLabel.textAlignment = .center
@@ -91,6 +106,23 @@ class TakeView: UITableViewCell {
         takeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
     }
     
+    func createSectionLabel() {
+        sectionLabel = UILabel()
+        sectionLabel.font = UIFont(name: "Courier New", size: 22)
+        sectionLabel.textAlignment = .center
+        sectionLabel.textColor = .white
+        takeLabel.numberOfLines = 0
+        takeLabel.adjustsFontSizeToFitWidth = true
+        self.addSubview(sectionLabel)
+        
+        //Section Label Constraints
+        sectionLabel.translatesAutoresizingMaskIntoConstraints = false
+        sectionLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        sectionLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
+        sectionLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
+        sectionLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
+    }
+    
     func createNewTakeButton() {
         //Button Properties
         addNewTakeButton = UIButton()
@@ -98,11 +130,7 @@ class TakeView: UITableViewCell {
         addNewTakeButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
         addNewTakeButton.addTarget(self, action: #selector(pressRecord), for: .touchUpInside)
         addNewTakeButton.frame = addNewTakeButton.currentImage!.accessibilityFrame
-        self.addSubview(addNewTakeButton)
-        
-        //variable for setting constraint
-//        let distance = self.widthAnchor
-        print(self.frame.size.width)
+        self.contentView.addSubview(addNewTakeButton)
         
         //Button Constraints
         addNewTakeButton.translatesAutoresizingMaskIntoConstraints = false
@@ -112,15 +140,15 @@ class TakeView: UITableViewCell {
     
     func createPlayButton() {
         //Button Properties
-        playButton = UIButton()
-        playButton.setImage(play, for: .normal)
-        playButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-        playButton.addTarget(self, action: #selector(pressPlay), for: .touchUpInside)
-        self.addSubview(playButton)
+        playPauseButton = UIButton()
+        playPauseButton.setImage(play, for: .normal)
+        playPauseButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
+        playPauseButton.addTarget(self, action: #selector(pressPlay), for: .touchUpInside)
+        self.contentView.addSubview(playPauseButton)
         
         //Button Constraints
-        playButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint(item: playButton!, attribute: .leading, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1.25, constant: 0).isActive = true
-        NSLayoutConstraint(item: playButton!, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: 0).isActive = true
+        playPauseButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint(item: playPauseButton!, attribute: .leading, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1.25, constant: 0).isActive = true
+        NSLayoutConstraint(item: playPauseButton!, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: 0).isActive = true
     }
 }

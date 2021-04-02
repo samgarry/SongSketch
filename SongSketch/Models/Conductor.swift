@@ -15,10 +15,14 @@ struct RecorderData {
 }
 
 protocol FileFinishedDelegate {
-    func fileFinished(i: Int)
+    func fileFinished()
 }
 
 class Conductor {
+    
+    // Singleton of the Conductor class to avoid multiple instances of the audio engine
+    static let shared = Conductor()
+    
     var fileFinishedDelegate: FileFinishedDelegate!
     
     var tag: Int = 0
@@ -28,11 +32,14 @@ class Conductor {
     let player = AudioPlayer()
     var silencer: Fader?
     let mixer = Mixer()
+    
+    let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("recorded")
+    let format = AVAudioFormat(commonFormat: .pcmFormatFloat64, sampleRate: 44100, channels: 2, interleaved: true)!
 
     @Published var data = RecorderData() {
         didSet {
             if data.isRecording {
-                //NodeRecorder.removeTempFiles() //COMMENTED THIS OUT FOR NOW CUZ I WANT THE AUDIO FILES TO BE STORED
+                NodeRecorder.removeTempFiles() //COMMENTED THIS OUT FOR NOW CUZ I WANT THE AUDIO FILES TO BE STORED
                 do {
                     try recorder?.record()
                 } catch let err {
@@ -53,18 +60,22 @@ class Conductor {
         }
     }
 
-    init(i: Int) {
+    init() {
         guard let input = engine.input else {
             fatalError()
         }
 
+//        //File Setup
+//        var audioFile = try! AVAudioFile(forWriting: url, settings: format.settings) //SHOULD IMPLEMENT A THROWS METHOD HERE
+
+        
         do {
+//            recorder = try NodeRecorder(node: input, file: audioFile)
             recorder = try NodeRecorder(node: input)
         } catch let err {
             fatalError("\(err)")
         }
-        //Set this recorder's tag (from the project view controller)
-        tag = i
+        
         //Audio setup
         let silencer = Fader(input, gain: 0)
         self.silencer = silencer
@@ -75,7 +86,7 @@ class Conductor {
     }
 
     func playingEnded() {
-        fileFinishedDelegate.fileFinished(i: tag)
+        fileFinishedDelegate.fileFinished()
         print("File is finished playing")
     }
     
@@ -90,5 +101,11 @@ class Conductor {
 
     func stop() {
         engine.stop()
+    }
+    
+    func getDirectory() ->  URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentDirectory = paths[0]
+        return documentDirectory
     }
 }

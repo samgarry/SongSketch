@@ -22,6 +22,9 @@
 		87031BDA2614120400D5F7B9 /* RecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87031BD92614120400D5F7B9 /* RecordingView.swift */; };
 		87031BDE261412E100D5F7B9 /* UIViewController+Children.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87031BDD261412E100D5F7B9 /* UIViewController+Children.swift */; };
 		87031BE12614130800D5F7B9 /* UIView+Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87031BE02614130800D5F7B9 /* UIView+Pin.swift */; };
+		87031BE526141CEE00D5F7B9 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87031BE426141CEE00D5F7B9 /* ToolbarView.swift */; };
+		87031BE92614F31F00D5F7B9 /* SelectedSectionBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87031BE82614F31F00D5F7B9 /* SelectedSectionBackgroundView.swift */; };
+		87031BEC26154BF200D5F7B9 /* PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87031BEB26154BF200D5F7B9 /* PersistenceService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +44,9 @@
 		87031BD92614120400D5F7B9 /* RecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingView.swift; sourceTree = "<group>"; };
 		87031BDD261412E100D5F7B9 /* UIViewController+Children.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Children.swift"; sourceTree = "<group>"; };
 		87031BE02614130800D5F7B9 /* UIView+Pin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Pin.swift"; sourceTree = "<group>"; };
+		87031BE426141CEE00D5F7B9 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
+		87031BE82614F31F00D5F7B9 /* SelectedSectionBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedSectionBackgroundView.swift; sourceTree = "<group>"; };
+		87031BEB26154BF200D5F7B9 /* PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +83,7 @@
 				87031BDC2614129B00D5F7B9 /* Extensions */,
 				87031BA92613D28700D5F7B9 /* AppDelegate.swift */,
 				87031BAB2613D28700D5F7B9 /* SceneDelegate.swift */,
+				87031BEB26154BF200D5F7B9 /* PersistenceService.swift */,
 				87031BD2261410E600D5F7B9 /* Models */,
 				87031BD1261410DF00D5F7B9 /* Views */,
 				87031BCC261407F900D5F7B9 /* View Controllers */,
@@ -101,9 +108,11 @@
 		87031BD1261410DF00D5F7B9 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				87031BE426141CEE00D5F7B9 /* ToolbarView.swift */,
 				87031BD3261411B500D5F7B9 /* TakeView.swift */,
 				87031BD6261411DB00D5F7B9 /* EmptySectionView.swift */,
 				87031BD92614120400D5F7B9 /* RecordingView.swift */,
+				87031BE82614F31F00D5F7B9 /* SelectedSectionBackgroundView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -203,9 +212,12 @@
 			files = (
 				87031BD7261411DB00D5F7B9 /* EmptySectionView.swift in Sources */,
 				87031BDE261412E100D5F7B9 /* UIViewController+Children.swift in Sources */,
+				87031BE526141CEE00D5F7B9 /* ToolbarView.swift in Sources */,
 				87031BD4261411B500D5F7B9 /* TakeView.swift in Sources */,
 				87031BCE2614080700D5F7B9 /* SectionViewController.swift in Sources */,
 				87031BB42613D28700D5F7B9 /* SongSketch.xcdatamodeld in Sources */,
+				87031BE92614F31F00D5F7B9 /* SelectedSectionBackgroundView.swift in Sources */,
+				87031BEC26154BF200D5F7B9 /* PersistenceService.swift in Sources */,
 				87031BAE2613D28700D5F7B9 /* SongViewController.swift in Sources */,
 				87031BDA2614120400D5F7B9 /* RecordingView.swift in Sources */,
 				87031BC22613D2AE00D5F7B9 /* Conductor.swift in Sources */,
