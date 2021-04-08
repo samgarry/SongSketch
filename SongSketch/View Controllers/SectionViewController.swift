@@ -9,14 +9,15 @@ import UIKit
 
 class SectionViewController: UIViewController {
     
+    //For the table view to access cells without risking typing a string wrong in code
+    struct Cells {
+        static let takeCell = "TakeCell"
+    }
+
     //Variables
     var tag: Int
     var cellSize: CGFloat
     var empty: Bool = true //Checks if the section has no takes yet
-    
-    struct Cells {
-        static let takeCell = "TakeCell"
-    }
         
     //View Variables
     var holderView = UIView()
@@ -31,9 +32,12 @@ class SectionViewController: UIViewController {
     //Takes Array
     var takes: [TakeView] = []
     
+    //Section Model Variable
+    //let section: Section?
+    
     
     //INITS
-    init(_ index: Int) {
+    init(_ index: Int) { //drop a reference to the model from here since it will be initialized in the project view controller) {
         tag = index
         cellSize = 0.0
         
@@ -49,11 +53,6 @@ class SectionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view = holderView
-        //Calling configureTableView() in the SongViewController()
-//        for _ in 0..<5 {
-//            let take = TakeView()
-//            takes.append(take)
-//        }
         
         //Starting Situation
         view = emptyStarterView //Must be called in viewDidLoad() instead of LoadView()
@@ -61,7 +60,7 @@ class SectionViewController: UIViewController {
                 
         emptyStarterView.recordTapped = {
             self.view = self.recordingView
-            self.recording()
+            self.recording(1)
         }
         
         recordingView.endRecordTapped = {
@@ -78,7 +77,13 @@ class SectionViewController: UIViewController {
         }
     }
     
-    func recording() {
+    func recording(_ takeIndex: Int) {
+        //Tell the conductor what section is being dealt with
+        Conductor.shared.currentSection = self.tag
+        
+        //Tell the conductor what take number is being recorded for that section
+        Conductor.shared.numOfTakes = takeIndex
+        
         //To start the recording
         if (Conductor.shared.data.isRecording != true) {
             Conductor.shared.data.isRecording.toggle()
@@ -147,12 +152,18 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         //Assign the recordTapped action which will be executed when the user taps the plus button
         cell.recordTapped = { (cell) in
             self.view = self.recordingView
-            self.recording()
+            self.recording(indexPath.row+2)
         }
         
         cell.playTapped = {
+            //Tell the conductor what section is being dealt with
+            Conductor.shared.currentSection = self.tag
+            
             //To start playing
             if Conductor.shared.data.isPlaying != true {
+                //Tell the conductor what take number is being recorded for that section
+                Conductor.shared.numOfTakes = indexPath.row+1
+                
                 Conductor.shared.data.isPlaying.toggle()
                 cell.playPauseButton.isSelected = true
                 cell.updateButton(playing: true)
@@ -210,10 +221,10 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
 
 
 //Delegate to notify the overall song view controller that the file has finished playing and to update the play buttons for all sections
-extension SongViewController: FileFinishedDelegate {
+extension ProjectViewController: FileFinishedDelegate {
     func fileFinished() {
-        for i in 0..<sections.count {
-            let sectionTV = sections[i].tableView
+        for i in 0..<sectionViewControllers.count {
+            let sectionTV = sectionViewControllers[i].tableView
             DispatchQueue.main.async {
                 for cell in sectionTV.visibleCells {
                     let indexPath = sectionTV.indexPath(for: cell)

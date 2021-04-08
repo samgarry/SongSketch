@@ -1,5 +1,5 @@
 //
-//  SongViewController.swift
+//  ProjectViewController.swift
 //  SongSketch
 //
 //  Created by Samuel Garry on 2/25/21.
@@ -10,12 +10,11 @@ import UIKit
 import AVFoundation
 
 
-class SongViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
+class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
+
     
-    //Functional Model Variables
-    //var recorders = [SongSketch.Conductor]()
-    //var recorder = SongSketch.Conductor()
-    var playButtons = [Int: UIButton]()
+    // Reference to managed object context -- CORE DATA
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     //UI View Variables
     let leftSpacer = UIView()       //Spacer
@@ -25,12 +24,24 @@ class SongViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlay
 
     
     //NEW STUFF
-    var sections = [SectionViewController(0)] //Array of the six section view controllers
+    var sectionViewControllers = [SectionViewController(0)] //Array of the six section view controllers
+    //var sectionViewControllers: [SectionViewController] = []
+    var sectionModels: [Section]?
     var sectionContainerView = UIView()
     var size: Int = 0
     var sizeSetter = UIView()
-
-                
+    
+    //_____________________________________________________________________________________
+    //Core Data Functions
+    func fetchSections() {
+        //fetch the sections from Core Data to display on screen
+        do {
+            try context.fetch(Section.fetchRequest())
+        } catch let err{
+            print(err)
+        }
+    }
+    
     override func loadView() {
         view = UIView()
         view.backgroundColor = UIColor(red: 3/255, green: 50/255, blue: 105/255, alpha: 1)
@@ -66,6 +77,7 @@ class SongViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlay
         var i = 1
         for row in 0..<3 {
             for column in 0..<2 {
+                //setupSectionDataModels(0, i, "Section \(i)")
                 setupSectionViewControllers(column, row, i, size)
                 i += 1
             }
@@ -108,146 +120,61 @@ class SongViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlay
         sizeSetter.heightAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
     }
     
-    
+//    func setupSectionDataModels(_ position: Int, _ index: Int, _ name: String) {
+//        let section = Section()
+//        section.position = Int64(position)
+//        section.index = Int64(index)
+//        section.name = name
+//
+//        //Add the section model to the array of section models
+//        sectionModels?.append(section)
+//    }
+
     //Set up the section view controllers
     func setupSectionViewControllers(_ column: Int, _ row: Int, _ index: Int, _ size: Int) {
         let section = SectionViewController(index)
-        sections.append(section)
+        sectionViewControllers.append(section)
         
         //Add the section to the section array for accessing/modifying later
-        self.add(sections[index], CGRect(width: size, height: size))
+        self.add(sectionViewControllers[index], CGRect(width: size, height: size))
         
         //Set up the initial constraints
-        sections[index].view.translatesAutoresizingMaskIntoConstraints = false
+        sectionViewControllers[index].view.translatesAutoresizingMaskIntoConstraints = false
 
         if column == 0 {
-            sections[index].view.leadingAnchor.constraint(equalTo: leftSpacer.trailingAnchor).isActive = true
+            sectionViewControllers[index].view.leadingAnchor.constraint(equalTo: leftSpacer.trailingAnchor).isActive = true
         }
         else {
-            sections[index].view.leadingAnchor.constraint(equalTo: midSpacer.trailingAnchor).isActive = true
+            sectionViewControllers[index].view.leadingAnchor.constraint(equalTo: midSpacer.trailingAnchor).isActive = true
         }
         if row == 0 {
-            sections[index].view.topAnchor.constraint(equalTo: sectionContainerView.topAnchor).isActive = true
+            sectionViewControllers[index].view.topAnchor.constraint(equalTo: sectionContainerView.topAnchor).isActive = true
         }
         else if row == 1 {
-            sections[index].view.centerYAnchor.constraint(equalTo: sectionContainerView.centerYAnchor).isActive = true
+            sectionViewControllers[index].view.centerYAnchor.constraint(equalTo: sectionContainerView.centerYAnchor).isActive = true
         }
         else {
-            sections[index].view.bottomAnchor.constraint(equalTo: sectionContainerView.bottomAnchor).isActive = true
+            sectionViewControllers[index].view.bottomAnchor.constraint(equalTo: sectionContainerView.bottomAnchor).isActive = true
         }
         
         //Set the height and width of the button views
-        sections[index].view.widthAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
-        sections[index].view.heightAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
+        sectionViewControllers[index].view.widthAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
+        sectionViewControllers[index].view.heightAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         Conductor.shared.fileFinishedDelegate = self
-                
-//        let recorder = SongSketch.Conductor()
-//        recorder.start()
-        
-//        for i in 0..<sections.count {
-//            let recorder = SongSketch.Conductor()
-//            recorder.fileFinishedDelegate = self
-//            recorders.append(recorder)
-//        }
-        
-        //let recorder = Son
-        
-//        for i in 0..<recorders.count {
-//            //Start the recorder engines
-//            recorders[i].start()
-//        }
     }
     
     override func viewDidLayoutSubviews() {
         //Set the section view controllers' cell properties and set up its table view
-        for i in 0..<sections.count {
-            sections[i].cellSize = sizeSetter.frame.height
+        for i in 0..<sectionViewControllers.count {
+            sectionViewControllers[i].cellSize = sizeSetter.frame.height
             //sections[i].configureTableView()
             sizeSetter.removeFromSuperview() //Delete the unnecessary view now that the size has been retreived
         }
     }
-
-//    @objc func recordTapped(sender: UIButton) {
-//        switch sender.tag {
-//            case 0:
-//                pressRecord(i: 0, sender: sender)
-//            case 1:
-//                pressRecord(i: 1, sender: sender)
-//            case 2:
-//                pressRecord(i: 2, sender: sender)
-//            case 3:
-//                pressRecord(i: 3, sender: sender)
-//            case 4:
-//                pressRecord(i: 4, sender: sender)
-//            default:
-//                pressRecord(i: 5, sender: sender)
-//        }
-//    }
-        
-//    func pressRecord(i: Int, sender: UIButton) {
-//        let currRec = recorders[i]
-//
-//        //To start the recording
-//        if (currRec.data.isRecording != true) {
-//            currRec.data.isRecording.toggle()
-//            sender.setImage(nil, for: .normal)
-//            sender.backgroundColor = UIColor.red
-//        }
-//        //To stop the recording
-//        else {
-//            currRec.data.isRecording.toggle()
-//            sender.isHidden = true //Delete the record button now that it's used
-//            createPlayButtons(i: i) //Create a new play button to sit on top of the view
-//        }
-//    }
-
-//    @objc func playTapped(sender: UIButton) {
-//        switch sender.tag {
-//        case 0:
-//            pressPlay(i: 0, sender: sender)
-//        case 1:
-//            pressPlay(i: 1, sender: sender)
-//        case 2:
-//            pressPlay(i: 2, sender: sender)
-//        case 3:
-//            pressPlay(i: 3, sender: sender)
-//        case 4:
-//            pressPlay(i: 4, sender: sender)
-//        default:
-//            pressPlay(i: 5, sender: sender)
-//        }
-//    }
-    
-//    func pressPlay(i: Int, sender: UIButton) {
-//        //let current = recorders[i]
-//
-//        //To start playing
-//        if current.data.isPlaying != true {
-//            current.data.isPlaying.toggle()
-//            sender.setImage(pause, for: .normal)
-//            sender.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-//        }
-//        //To stop playing
-//        else {
-//            print("Entered the else statement")
-//            current.data.isPlaying.toggle()
-//            sender.setImage(play, for: .normal)
-//            sender.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-//        }
-//    }
-    
-    func updatePlayButton(i: Int) {
-        DispatchQueue.main.async {
-            print("i", i)
-            print("playButtons size: ", self.playButtons.count)
-            //self.recorders[i].data.isPlaying.toggle() //set the recorder to not playing now that it is finished
-            //self.playButtons[i]!.setImage(self.play, for: .normal)
-            //self.playButtons[i]!.setPreferredSymbolConfiguration(self.configuration, forImageIn: .normal)
-        }
-    }
 }
+
