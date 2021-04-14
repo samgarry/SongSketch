@@ -22,7 +22,8 @@ class TakeView: UITableViewCell {
     let configuration = UIImage.SymbolConfiguration(pointSize: 40, weight: .regular, scale: .medium)
     
     //Button Functionality Closures -- Send these to the section view controller
-    var recordTapped: ((UITableViewCell) -> Void)?
+    //var recordTapped: ((UITableViewCell) -> Void)?
+    var recordTapped: (() -> Void)?
     var playTapped: (() -> Void)?
     
     func createSymbols() {
@@ -62,14 +63,14 @@ class TakeView: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func set(label: String, section: String) {
-        takeLabel.text = label
-        sectionLabel.text = section
-    }
+//    func set(label: String, section: String) {
+//        takeLabel.text = label
+//        sectionLabel.text = section
+//    }
     
     //Function that calls the recordTapped closure
     @objc func pressRecord() {
-        recordTapped?(self)
+        recordTapped?()/*(self)*/
     }
     
     //Function that calls the playTapped closure

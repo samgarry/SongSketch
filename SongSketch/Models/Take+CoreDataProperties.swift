@@ -2,7 +2,7 @@
 //  Take+CoreDataProperties.swift
 //  SongSketch
 //
-//  Created by Samuel Garry on 4/7/21.
+//  Created by Samuel Garry on 4/12/21.
 //
 //
 
@@ -16,11 +16,11 @@ extension Take {
         return NSFetchRequest<Take>(entityName: "Take")
     }
 
-    @NSManaged public var audioFilePath: String?
-    @NSManaged public var name: String?
+    @NSManaged public var audioFilePath: String
+    @NSManaged public var name: String
     @NSManaged public var notes: String?
-    @NSManaged public var numOfTakes: Int64
-    @NSManaged public var section: Section?
+    @NSManaged public var index: Int64
+    @NSManaged public var section: Section
 
 }
 

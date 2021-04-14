@@ -15,7 +15,7 @@ struct RecorderData {
 }
 
 protocol FileFinishedDelegate {
-    func fileFinished()
+    func updateButton()
 }
 
 class Conductor {
@@ -23,6 +23,7 @@ class Conductor {
     // Singleton of the Conductor class to avoid multiple instances of the audio engine
     static let shared = Conductor()
     
+    //Protocols
     var fileFinishedDelegate: FileFinishedDelegate!
     
     var tag: Int = 0
@@ -41,6 +42,10 @@ class Conductor {
     var audioFile: AVAudioFile!
     var readingFile: AVAudioFile!
     
+    //File Name Variables
+    public var writeToFileName: String?
+    public var readToFileName: String?
+    
     //Might find a replacement for this after incorporating Core Data or do something with delegation
     public var currentSection: Int = 0
     
@@ -58,9 +63,13 @@ class Conductor {
                     
                     //Setting up the file to write to
                     do {
-                        let filename = getDirectory(index: currentSection).appendingPathComponent("Take \(numOfTakes).caf")
-                        //let filename = getDocumentsDirectory().appendingPathComponent("\(2).caf")
-                        try audioFile = AVAudioFile(forWriting: filename, settings: format.settings)
+                        //let filename = getDirectory(index: currentSection).appendingPathComponent("Take \(numOfTakes).caf")
+                        if let filename = writeToFileName {
+                            let file = getDocumentsDirectory().appendingPathComponent(filename)
+                            try audioFile = AVAudioFile(forWriting: file, settings: format.settings)
+                        } else {
+                            print("No filename given to write to")
+                        }
                     } catch let err {
                         fatalError("\(err)")
                     }
@@ -94,9 +103,11 @@ class Conductor {
                 print("section: \(currentSection)")
                 //reading file setup
                 do {
-                    let filename = getDirectory(index: currentSection).appendingPathComponent("Take \(numOfTakes).caf")
-                    //let filename = getDocumentsDirectory().appendingPathComponent("\(2).caf")
-                    try readingFile = AVAudioFile(forReading: filename, commonFormat: playbackFormat!, interleaved: true)
+                    //let filename = getDirectory(index: currentSection).appendingPathComponent("Take \(numOfTakes).caf")
+                    if let filename = readToFileName {
+                        let file = getDocumentsDirectory().appendingPathComponent(filename)
+                        try readingFile = AVAudioFile(forReading: file, commonFormat: playbackFormat!, interleaved: true)
+                    }
                 } catch let err {
                     fatalError("\(err)")
                 }
@@ -115,10 +126,8 @@ class Conductor {
 
     init() {
         
-        //Directory Setup
-        setupDirectoryFolders()
-        
-        
+//        //Directory Setup
+//        setupDirectoryFolders()
         
         guard let input = engine.input else {
             fatalError()
@@ -134,7 +143,7 @@ class Conductor {
     }
 
     func playingEnded() {
-        fileFinishedDelegate.fileFinished()
+        fileFinishedDelegate.updateButton()
         print("File is finished playing")
     }
     
@@ -151,12 +160,13 @@ class Conductor {
         engine.stop()
     }
     
-    func dateString() -> String {
-      let formatter = DateFormatter()
-      formatter.dateFormat = "ddMMMYY_hhmmssa"
-      let fileName = formatter.string(from: Date())
-      return "\(fileName).aif"
-    }
+//    func dateString() -> String {
+//        let formatter = DateFormatter()
+//        formatter.dateFormat = "ddMMMYY_hhmmssa"
+//        let fileName = formatter.string(from: Date())
+////      return "\(fileName).aif"
+//        return "\(fileName).caf"
+//    }
     
     func setupDirectoryFolders() {
         let manager = FileManager.default
