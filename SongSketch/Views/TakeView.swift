@@ -52,7 +52,7 @@ class TakeView: UITableViewCell {
         //Set images to symbols
         createSymbols()
         
-        //Add Buttons
+        //Add Labels and Buttons
         createTakeLabel()
         createSectionLabel()
         createPlayButton()

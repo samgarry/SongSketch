@@ -2,7 +2,7 @@
 //  Project+CoreDataProperties.swift
 //  SongSketch
 //
-//  Created by Samuel Garry on 4/10/21.
+//  Created by Samuel Garry on 4/15/21.
 //
 //
 
@@ -16,8 +16,9 @@ extension Project {
         return NSFetchRequest<Project>(entityName: "Project")
     }
 
-    @NSManaged public var name: String?
-    @NSManaged public var sections: NSSet?
+    @NSManaged public var name: String
+    @NSManaged public var index: String
+    @NSManaged public var sections: NSSet
 
 }
 

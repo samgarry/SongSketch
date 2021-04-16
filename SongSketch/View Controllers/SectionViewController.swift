@@ -10,10 +10,6 @@ import CoreData
 
 class SectionViewController: UIViewController {
     
-    //MAYBE DELETE ME
-    //var fetchedResultsController: NSFetchedResultsController<Take>!
-    
-    
     //For the table view to access cells without risking typing a string wrong in code
     struct Cells {
         static let takeCell = "TakeCell"
@@ -39,16 +35,17 @@ class SectionViewController: UIViewController {
     let tableView = UITableView()
     let contentView = UIView()
     
-    //Takes Arrays
+    //Takes Array
     var takeViews: [TakeView] = []
     //var takeModels: [Take]?
+    
+    //Variable for Accessing Corresponding Section in Core Data
     var currentSection = Section()
     
+    //Variable for Accessing Overall Corresponding Project in Core Data
+    public var currentProject: Project?
     
-    var takeModels = [Take]()
-    
-    //Section Model Variable
-    //let section: Section?
+    //var takeModels = [Take]()
     
     
     //INITS
@@ -74,10 +71,6 @@ class SectionViewController: UIViewController {
         //Set up the section based on core data information
         setTableViewDelegates()
         self.setUpSection()
-        //self.view.addSubview(self.recordingView)
-        //self.loadSavedData()
-        //print("current section: \(self.currentSection)")
-//        setTableViewDelegates()
         
         //Perform a fetch using the fetchedResultsController
         do {
@@ -85,18 +78,7 @@ class SectionViewController: UIViewController {
         } catch let err {
             print(err)
         }
-        
-        
-        //DELETE THIS
-        print("Section's num of takes: \(currentSection.numOfTakes)")
-        
-        
-        //Starting Situation
-        //view = emptyStarterView //Must be called in viewDidLoad() instead of LoadView()
-                                //because it references its own self's view
-              
-        
-        
+
         //Button Closures
         emptyStarterView.recordTapped = {
             //self.view = self.recordingView
@@ -237,7 +219,9 @@ class SectionViewController: UIViewController {
     //Fetch the appropriate section model from Core Data
     func setUpSection() {
         let request = Section.fetchRequest() as NSFetchRequest<Section>
-        let pred = NSPredicate(format: "index == %i", tag)
+        let indexPredicate = NSPredicate(format: "index == %i", tag)
+        let projectPredicate = NSPredicate(format: "project == %@", currentProject!)
+        let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPredicate, projectPredicate])
         request.predicate = pred
         do {
             //Grab the appropriate section
@@ -248,6 +232,7 @@ class SectionViewController: UIViewController {
             currentSection = section
             
             if section.numOfTakes == 0 {
+                print("got here 1")
                 //Starting Situation
 //                let newStarterView = self.emptyStarterView
 //                print("cellsize: \(cellSize)")
@@ -257,6 +242,7 @@ class SectionViewController: UIViewController {
                 print("It's empty")
             }
             else {
+                print("got here 2")
                 //Set the number of takes for this view controller
                 numOfTakes = Int(section.numOfTakes)
                 
@@ -277,7 +263,9 @@ class SectionViewController: UIViewController {
     
     func updateNumOfTakes() {
         let request = Section.fetchRequest() as NSFetchRequest<Section>
-        let pred = NSPredicate(format: "index == %i", tag)
+        let indexPred = NSPredicate(format: "index == %i", tag)
+        let projectPred = NSPredicate(format: "project == %@", currentProject!)
+        let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPred, projectPred])
         request.predicate = pred
         
         do {
@@ -433,7 +421,7 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         return indexPath
     }
     
-    
+    //Functions for snapping to cell
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         var visibleRect = CGRect()
         visibleRect.origin = tableView.contentOffset

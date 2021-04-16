@@ -22,29 +22,65 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     let midSpacer = UIView()        //Spacer
     let rightSpacer = UIView()      //Spacer
     let toolbarView = ToolbarView()
+    let titlebarView = ProjectTitleBarView()
+    let topContainerView = UIView()
+    var sectionContainerView = UIView()
+
 
     
     //NEW STUFF
     var sectionViewControllers = [SectionViewController(0)] //Array of the six section view controllers
-    //var sectionViewControllers: [SectionViewController] = []
     var sectionModels: [Section]?
-    var sectionContainerView = UIView()
     var size: Int = 0
     var sizeSetter = UIView()
     
+    
+    //Variables for Accessing Corresponding Project in Core Data
+    var currentProject = Project()
+    let projectTag: String
+    
     //__________________________________________________________________________________________
     //Core Data Functions
+    func setUpProject(_ projectIndex: String) {
+        print("Project Index: \(projectIndex)")
+        let request = Project.fetchRequest() as NSFetchRequest<Project>
+        let pred = NSPredicate(format: "index == %@", projectIndex)
+        request.predicate = pred
+        
+        do {
+            //Grab the appropriate project
+            let projects = try context.fetch(request)
+            let project = projects[0]
+            
+            //Set this view controller's project variable to the corresponding project model
+            currentProject = project
+            
+            print("current project index: \(currentProject.index)")
+            
+            if checkIfEmpty(entity: "Section") {
+                print("got here")
+                loadSectionsData()
+            }
+        } catch let err {
+            fatalError("\(err)")
+        }
+    }
+    
+    
     func checkIfEmpty(entity: String) -> Bool {
         var results: NSArray?
-        
+                
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: entity)
-        //var error = NSErrorPointer()
+        let projectPred = NSPredicate(format: "project == %@", currentProject)
+        request.predicate = projectPred
+        
+        //print("sections: \(try! context.fetch(request))")
+        let secs = try! context.fetch(request)
+        //let sec = secs[0]
+        print("number of sections: \(secs.count)")
 
-        do {
-            results = try self.context.fetch(request) as NSArray
-        } catch {
-            
-        }
+        do { results = try self.context.fetch(request) as NSArray
+        } catch let err { print(err) }
         if let res = results {
             if res.count == 0 {
                 return true
@@ -66,10 +102,8 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
             section.index = Int64(i)
             section.position = Int64(i)
             section.name = "Section \(i)"
-            
-            //Add the section model to the array of section models
-            //sectionModels?.append(section)
-            
+            section.project = currentProject
+            print("got here")
             
             do {
                 try self.context.save()
@@ -78,56 +112,40 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
             }
         }
     }
-    
-    func getSections() {
-        guard let sections = try! context.fetch(Section.fetchRequest()) as? [Section] else { return }
-        
-        sections.forEach( { print($0.name ?? "Section had no name") } )
-    }
-    
-    func fetchSection(index: Int) {
-        do {
-            
-        }
-    }
-    
-    
-    func fetchSections() {
-        //fetch the sections from Core Data to display on screen
-        do {
-            self.sectionModels = try context.fetch(Section.fetchRequest())
 
-            DispatchQueue.main.async {
-                //self.
-            }
-
-        } catch let err{
-            print(err)
-        }
-    }
     
     //End of Core Data Functions
     //__________________________________________________________________________________________
-    //Loading View Functions
+    //Loading Up Functions
+    
+    init(_ projectTag: String) {
+        //setUpProject(projectTag)
+        self.projectTag = projectTag
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     
     override func loadView() {
         view = UIView()
         view.backgroundColor = UIColor(red: 3/255, green: 50/255, blue: 105/255, alpha: 1)
         
-        //Core Data Stuff
-        //Create the six section models if they haven't been made yet (first load case scenario)
-        if (checkIfEmpty(entity: "Section")) {
-            loadSectionsData()
-        }
+//        //Create the six core data section models if they haven't been made yet (first load case scenario)
+//        if (checkIfEmpty(entity: "Section")) {
+//            loadSectionsData()
+//        }
         
-        //Otherwise load up the sections
+        //Connect this ProjectViewController to the corresponding Project in Core Data
+        setUpProject(projectTag)
         
-        
-        //Print out the sections names
-        getSections()
-
-        //Create the toolbar and sections container
+        //Create the top and sections container views
         createContainers()
+        
+        //Create top bar views
+        createTopBars()
 
         //Create spacer views
         createSpacers()
@@ -151,12 +169,13 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
                 i += 1
             }
         }
+        
         //Delete the Section 0 element of the section view controller array that was initialized first
         sectionViewControllers.removeFirst()
-        
-        //DELETE ME
-        for i in 0..<sectionViewControllers.count {
-            print ("Section: \(sectionViewControllers[i].tag)")
+
+        //BUTTON CLOSURES
+        titlebarView.backPressed = {
+            self.navigationController?.popToRootViewController(animated: true)
         }
         
     }
@@ -170,29 +189,44 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
         }
     }
     
-    //End of Loading View Functions
+    //End of Loading Up Functions
     //__________________________________________________________________________________________
     
     func createContainers() {
         //Container Views Set Up
+        view.addSubview(topContainerView)
         view.addSubview(sectionContainerView)
-        //view.addSubview(topContainerView)
-        view.addSubview(toolbarView)
-        toolbarView.translatesAutoresizingMaskIntoConstraints = false
+        topContainerView.translatesAutoresizingMaskIntoConstraints = false
         sectionContainerView.translatesAutoresizingMaskIntoConstraints = false
         
-        
-        //Toolbar Constraint Set up
-        NSLayoutConstraint(item: toolbarView, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1, constant: 0).isActive = true
-        NSLayoutConstraint(item: toolbarView, attribute: .width, relatedBy: .equal, toItem: view, attribute: .width, multiplier: 1, constant: 0).isActive = true
-        NSLayoutConstraint(item: toolbarView, attribute: .height, relatedBy: .equal, toItem: view, attribute: .height, multiplier: 1/3, constant: 0).isActive = true
-        
-        
+        //Top Container Constraint Set up
+        NSLayoutConstraint(item: topContainerView, attribute: .top, relatedBy: .equal, toItem: view.safeAreaLayoutGuide, attribute: .top, multiplier: 1, constant: 0).isActive = true
+        NSLayoutConstraint(item: topContainerView, attribute: .width, relatedBy: .equal, toItem: view, attribute: .width, multiplier: 1, constant: 0).isActive = true
+        NSLayoutConstraint(item: topContainerView, attribute: .height, relatedBy: .equal, toItem: view, attribute: .height, multiplier: 0.3, constant: 0).isActive = true
+
         //Section Container Constraint Set up
-        NSLayoutConstraint(item: sectionContainerView, attribute: .top, relatedBy: .equal, toItem: toolbarView, attribute: .bottom, multiplier: 1, constant: 0).isActive = true
+        NSLayoutConstraint(item: sectionContainerView, attribute: .top, relatedBy: .equal, toItem: topContainerView, attribute: .bottom, multiplier: 1, constant: 0).isActive = true
         NSLayoutConstraint(item: sectionContainerView, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: -50).isActive = true
         NSLayoutConstraint(item: sectionContainerView, attribute: .width, relatedBy: .equal, toItem: view, attribute: .width, multiplier: 1, constant: 0).isActive = true
         NSLayoutConstraint(item: sectionContainerView, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0).isActive = true
+    }
+    
+    func createTopBars() {
+        //Bar Views Set Up
+        topContainerView.addSubview(titlebarView)
+        topContainerView.addSubview(toolbarView)
+        titlebarView.translatesAutoresizingMaskIntoConstraints = false
+        toolbarView.translatesAutoresizingMaskIntoConstraints = false
+
+        //Title Bar Constraint Set up
+        NSLayoutConstraint(item: titlebarView, attribute: .top, relatedBy: .equal, toItem: topContainerView, attribute: .top, multiplier: 1, constant: 0).isActive = true
+        NSLayoutConstraint(item: titlebarView, attribute: .width, relatedBy: .equal, toItem: topContainerView, attribute: .width, multiplier: 1, constant: 0).isActive = true
+        NSLayoutConstraint(item: titlebarView, attribute: .height, relatedBy: .equal, toItem: topContainerView, attribute: .height, multiplier: 0.35, constant: 0).isActive = true
+
+        //Toolbar Constraint Set up
+        NSLayoutConstraint(item: toolbarView, attribute: .top, relatedBy: .equal, toItem: titlebarView, attribute: .bottom, multiplier: 1, constant: 0).isActive = true
+        NSLayoutConstraint(item: toolbarView, attribute: .width, relatedBy: .equal, toItem: topContainerView, attribute: .width, multiplier: 1, constant: 0).isActive = true
+        NSLayoutConstraint(item: toolbarView, attribute: .height, relatedBy: .equal, toItem: topContainerView, attribute: .height, multiplier: 0.2, constant: 0).isActive = true
     }
     
     func createSpacers() {
@@ -230,20 +264,11 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
         sizeSetter.widthAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
         sizeSetter.heightAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
     }
-    
-//    func setupSectionDataModels(_ position: Int, _ index: Int, _ name: String) {
-//        let section = Section()
-//        section.position = Int64(position)
-//        section.index = Int64(index)
-//        section.name = name
-//
-//        //Add the section model to the array of section models
-//        sectionModels?.append(section)
-//    }
 
     //Set up the section view controllers
     func setupSectionViewControllers(_ column: Int, _ row: Int, _ index: Int, _ size: Int) {
         let section = SectionViewController(index)
+        section.currentProject = self.currentProject
         sectionViewControllers.append(section)
         
         //Add the section to the section array for accessing/modifying later
@@ -268,7 +293,7 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
             sectionViewControllers[index].view.bottomAnchor.constraint(equalTo: sectionContainerView.bottomAnchor).isActive = true
         }
         
-        //Set the height and width of the button views
+        //Set the height and width of the section view controllers
         sectionViewControllers[index].view.widthAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
         sectionViewControllers[index].view.heightAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
     }
