@@ -217,6 +217,9 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
         topContainerView.addSubview(toolbarView)
         titlebarView.translatesAutoresizingMaskIntoConstraints = false
         toolbarView.translatesAutoresizingMaskIntoConstraints = false
+        
+        titlebarView.initialTitle = projectTag
+        titlebarView.setInitialTitle()
 
         //Title Bar Constraint Set up
         NSLayoutConstraint(item: titlebarView, attribute: .top, relatedBy: .equal, toItem: topContainerView, attribute: .top, multiplier: 1, constant: 0).isActive = true
@@ -268,6 +271,7 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     //Set up the section view controllers
     func setupSectionViewControllers(_ column: Int, _ row: Int, _ index: Int, _ size: Int) {
         let section = SectionViewController(index)
+        section.sectionDelegate = self
         section.currentProject = self.currentProject
         sectionViewControllers.append(section)
         
@@ -299,3 +303,34 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     }
 }
 
+
+//Delegate to notify the overall song view controller that the file has finished playing and to update the play buttons for all sections
+extension ProjectViewController: FileFinishedDelegate {
+    func updateButton() {
+        for i in 0..<sectionViewControllers.count {
+            let sectionTV = sectionViewControllers[i].tableView
+            DispatchQueue.main.async {
+                for cell in sectionTV.visibleCells {
+                    let indexPath = sectionTV.indexPath(for: cell)
+                    if let cell = sectionTV.cellForRow(at: indexPath!) as? TakeView {
+                        if cell.playPauseButton.isSelected {
+                            cell.playPauseButton.sendActions(for: .touchUpInside)
+                        }
+                        cell.updateButton(playing: false)
+                    } else {
+                        print("empty")
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+extension ProjectViewController: SectionViewControllerDelegate {
+    func takeSelected() {
+        toolbarView.editButton.tintColor = .white
+        toolbarView.notesButton.tintColor = .white
+        toolbarView.trashButton.tintColor = .white
+    }
+}

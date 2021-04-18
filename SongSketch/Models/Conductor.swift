@@ -106,18 +106,37 @@ class Conductor {
                     //let filename = getDirectory(index: currentSection).appendingPathComponent("Take \(numOfTakes).caf")
                     if let filename = readToFileName {
                         let file = getDocumentsDirectory().appendingPathComponent(filename)
-                        try readingFile = AVAudioFile(forReading: file, commonFormat: playbackFormat!, interleaved: true)
+                        //try readingFile = AVAudioFile(forReading: file, commonFormat: playbackFormat!, interleaved: true)
+                        try player.file = AVAudioFile(forReading: file, commonFormat: playbackFormat!, interleaved: true)
+                        if engine.avEngine.isRunning {
+                            //player.playerNode.volume = 100
+                            player.play()
+                        }
+                        print("filename: \(filename)")
+                        print("file: \(file)")
                     }
                 } catch let err {
                     fatalError("\(err)")
                 }
-                
-                //if let file = recorder?.audioFile {
-                if let file = self.readingFile {
-                    print("got here")
-                    player.file = file
-                    player.play()
-                }
+//
+//                //if let file = recorder?.audioFile {
+//                if let file = self.readingFile {
+//                    print("checking file: \(file)")
+//                    player.file = file
+//                    if engine.avEngine.isRunning {
+//                        print("made it to is running block")
+//                        player.play()
+//                    }
+//                    else {
+//                        print("made it to is not running block")
+//                        do {
+//                            try engine.start()
+//                        } catch let err {
+//                            print(err)
+//                        }
+//                        player.play()
+//                    }
+//                }
             } else {
                 player.stop()
             }
@@ -150,9 +169,15 @@ class Conductor {
     
     func start() {
         do {
-            try engine.start()
+            if !engine.avEngine.isRunning {
+//                try engine.start()
+                try AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
+                try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+                try engine.start()
+                try AVAudioSession.sharedInstance().overrideOutputAudioPort(AVAudioSession.PortOverride.speaker)
+            }
         } catch let err {
-            print(err)
+            print("Could not set up session: error: \(err)")
         }
     }
 

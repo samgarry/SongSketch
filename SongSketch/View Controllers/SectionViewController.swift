@@ -8,12 +8,21 @@
 import UIKit
 import CoreData
 
+
+protocol SectionViewControllerDelegate {
+    func takeSelected()
+}
+
+
 class SectionViewController: UIViewController {
     
     //For the table view to access cells without risking typing a string wrong in code
     struct Cells {
         static let takeCell = "TakeCell"
     }
+    
+    //Protocol
+    var sectionDelegate: SectionViewControllerDelegate?
     
     // Reference to managed object context -- CORE DATA
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -176,6 +185,7 @@ class SectionViewController: UIViewController {
         tableView.pin(to: view)
         //tableView.allowsSelection = false
         tableView.isUserInteractionEnabled = true
+        tableView.allowsMultipleSelection = false
     }
     
     func setTableViewDelegates() {
@@ -253,6 +263,14 @@ class SectionViewController: UIViewController {
                     print(err)
                 }
                 configureTableView()
+                
+                //DELETE
+                let testView = UIView()
+                testView.backgroundColor = .clear
+                view.addSubview(testView)
+                testView.pin(to: view)
+                
+                
 //                tableView.reloadData()
             }
         } catch let err {
@@ -384,10 +402,10 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
             if Conductor.shared.data.isPlaying != true {
                 //Tell the conductor what take number is being recorded for that section
                 Conductor.shared.numOfTakes = indexPath.row+1
-                
+
                 //Tell the conductor what file to read
                 Conductor.shared.readToFileName = self.fetchAudioPath(indexPath.row+1)
-                
+
                 Conductor.shared.data.isPlaying.toggle()
                 cell.playPauseButton.isSelected = true
                 cell.updateButton(playing: true)
@@ -399,8 +417,12 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
                 cell.updateButton(playing: false)
             }
         }
-        
         return cell
+    }
+    
+    //Selection Handling
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        sectionDelegate?.takeSelected()
     }
     
     func goToLastCell(_ tableView: UITableView) {
@@ -474,30 +496,6 @@ extension SectionViewController: NSFetchedResultsControllerDelegate {
             break;
         default:
             print("...")
-        }
-    }
-}
-
-
-
-//Delegate to notify the overall song view controller that the file has finished playing and to update the play buttons for all sections
-extension ProjectViewController: FileFinishedDelegate {
-    func updateButton() {
-        for i in 0..<sectionViewControllers.count {
-            let sectionTV = sectionViewControllers[i].tableView
-            DispatchQueue.main.async {
-                for cell in sectionTV.visibleCells {
-                    let indexPath = sectionTV.indexPath(for: cell)
-                    if let cell = sectionTV.cellForRow(at: indexPath!) as? TakeView {
-                        if cell.playPauseButton.isSelected {
-                            cell.playPauseButton.sendActions(for: .touchUpInside)
-                        }
-                        cell.updateButton(playing: false)
-                    } else {
-                        print("empty")
-                    }
-                }
-            }
         }
     }
 }

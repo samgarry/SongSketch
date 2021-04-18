@@ -19,15 +19,25 @@ class ProjectTitleBarView: UIView {
     //Back Button Functionality Closure -- Send this to the ProjectViewController()
     var backPressed: (() -> Void)?
     
+    //MAYBE DELETE THIS
+    public var initialTitle = String()
+    
     
     override init (frame: CGRect) {
         super.init(frame: frame)
+        
         setupTitle()
         setupBackButton()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    //PROBABLY DELETE THIS AND USE PROTOCOL/DELEGATION FOR THE SONG TITLE
+    public func setInitialTitle() {
+        let string = initialTitle.dropLast(9)
+        songLabel.text = String(string)
     }
     
     func setupBackButton() {

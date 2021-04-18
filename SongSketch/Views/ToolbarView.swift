@@ -33,20 +33,28 @@ class ToolbarView: UIView {
     
     func setupToolbar() {
         //Metronome Symbol
-        let trash = UIImage(systemName: "trash")
-        trashImage = (trash?.withTintColor(.white, renderingMode: .alwaysOriginal))!
+//        let trash = UIImage(systemName: "trash")
+//        trashButton.setImage(trash, for: .normal)
+//        trashButton.tintColor = .gray
+        //trashImage = (trash?.withTintColor(.gray, renderingMode: .alwaysTemplate))!
         
         //Edit Symbol
-        let edit = UIImage(systemName: "pencil")
-        editImage = (edit?.withTintColor(.white, renderingMode: .alwaysOriginal))!
+//        let edit = UIImage(systemName: "pencil")
+//        editButton.setImage(edit, for: .normal)
+//        editButton.tintColor = .gray
+        //editImage = (edit?.withTintColor(.gray, renderingMode: .alwaysTemplate))!
         
         //Notes Symbol
-        let notes = UIImage(systemName: "book")
-        notesImage = (notes?.withTintColor(.white, renderingMode: .alwaysOriginal))!
+//        let notes = UIImage(systemName: "book")
+//        notesButton.setImage(notes, for: .normal)
+//        notesButton.tintColor = .gray
+        //notesImage = (notes?.withTintColor(.gray, renderingMode: .alwaysTemplate))!
         
         //Metronome Button Properties
         trashButton = UIButton()
-        trashButton.setImage(trashImage, for: .normal)
+        let trash = UIImage(systemName: "trash")
+        trashButton.setImage(trash, for: .normal)
+        trashButton.tintColor = .gray
         trashButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
         //metronomeButton.addTarget(self, action: #selector(pressRecord), for: .touchUpInside)
         //metronomeButton.frame = addNewTakeButton.currentImage!.accessibilityFrame
@@ -59,7 +67,9 @@ class ToolbarView: UIView {
         
         //Edit Button Properties
         editButton = UIButton()
-        editButton.setImage(editImage, for: .normal)
+        let edit = UIImage(systemName: "pencil")
+        editButton.setImage(edit, for: .normal)
+        editButton.tintColor = .gray
         editButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
         //metronomeButton.addTarget(self, action: #selector(pressRecord), for: .touchUpInside)
         //metronomeButton.frame = addNewTakeButton.currentImage!.accessibilityFrame
@@ -73,7 +83,9 @@ class ToolbarView: UIView {
         
         //Notes Button Properties
         notesButton = UIButton()
-        notesButton.setImage(notesImage, for: .normal)
+        let notes = UIImage(systemName: "book")
+        notesButton.setImage(notes, for: .normal)
+        notesButton.tintColor = .gray
         notesButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
         //metronomeButton.addTarget(self, action: #selector(pressRecord), for: .touchUpInside)
         //metronomeButton.frame = addNewTakeButton.currentImage!.accessibilityFrame
