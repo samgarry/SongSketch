@@ -2,7 +2,7 @@
 //  Section+CoreDataProperties.swift
 //  SongSketch
 //
-//  Created by Samuel Garry on 4/10/21.
+//  Created by Samuel Garry on 4/18/21.
 //
 //
 
@@ -17,9 +17,10 @@ extension Section {
     }
 
     @NSManaged public var index: Int64
-    @NSManaged public var name: String
-    @NSManaged public var numOfTakes: Int64
+    @NSManaged public var name: String?
+    @NSManaged public var totalTakes: Int64
     @NSManaged public var position: Int64
+    @NSManaged public var numOfTakes: Int64
     @NSManaged public var project: Project?
     @NSManaged public var takes: NSSet?
 

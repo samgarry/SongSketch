@@ -10,6 +10,7 @@
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="numOfTakes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="position" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalTakes" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="project" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Project" inverseName="sections" inverseEntity="Project"/>
         <relationship name="takes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Take" inverseName="section" inverseEntity="Take"/>
     </entity>
@@ -22,7 +23,7 @@
     </entity>
     <elements>
         <element name="Project" positionX="-54" positionY="18" width="128" height="88"/>
-        <element name="Section" positionX="-54" positionY="-9" width="128" height="133"/>
+        <element name="Section" positionX="-54" positionY="-9" width="128" height="148"/>
         <element name="Take" positionX="-63" positionY="-18" width="128" height="118"/>
     </elements>
 </model>

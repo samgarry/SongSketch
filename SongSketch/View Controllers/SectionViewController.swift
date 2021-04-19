@@ -10,7 +10,9 @@ import CoreData
 
 
 protocol SectionViewControllerDelegate {
-    func takeSelected()
+    func takeSelected(index: Int, row: Int, take: Take)
+    func takeDeSelected(sectionIndex: Int)
+    func interruptPlayingWithPlay(sectionTag: Int)
 }
 
 
@@ -31,7 +33,7 @@ class SectionViewController: UIViewController {
     var tag: Int
     var cellSize: CGFloat
     var empty: Bool = true //Checks if the section has no takes yet
-    var numOfTakes: Int
+    var totalTakes: Int
     var timeOfLastRecording: String
         
     //View Variables
@@ -39,6 +41,8 @@ class SectionViewController: UIViewController {
     var emptyStarterView = EmptySectionView()
     var takeView = TakeView()
     var recordingView = RecordingView()
+    var blockerView: UIView?
+
     
     //Tableview elements
     let tableView = UITableView()
@@ -46,7 +50,7 @@ class SectionViewController: UIViewController {
     
     //Takes Array
     var takeViews: [TakeView] = []
-    //var takeModels: [Take]?
+    var takeModels: [Take]?
     
     //Variable for Accessing Corresponding Section in Core Data
     var currentSection = Section()
@@ -61,7 +65,7 @@ class SectionViewController: UIViewController {
     init(_ index: Int) {
         tag = index
         cellSize = 0.0
-        numOfTakes = 0
+        totalTakes = 0
         timeOfLastRecording = ""
         
         super.init(nibName: nil, bundle: nil)
@@ -186,6 +190,24 @@ class SectionViewController: UIViewController {
         //tableView.allowsSelection = false
         tableView.isUserInteractionEnabled = true
         tableView.allowsMultipleSelection = false
+        
+        //Set up Long Press Functionality
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(longPressGestureRecognizer:)))
+          tableView.addGestureRecognizer(longPressRecognizer)
+    }
+    
+    @objc func longPress(longPressGestureRecognizer: UILongPressGestureRecognizer) {
+
+        if longPressGestureRecognizer.state == UIGestureRecognizer.State.began {
+            let touchPoint = longPressGestureRecognizer.location(in: tableView)
+            if let indexPath = tableView.indexPathForRow(at: touchPoint) {
+                // add your code here
+                // you can use 'indexPath' to find out which row is selected
+                print("Long pressed")
+                
+                //PUT MY MOVING CODE HERE
+            }
+        }
     }
     
     func setTableViewDelegates() {
@@ -241,7 +263,7 @@ class SectionViewController: UIViewController {
             //Set this view controller's section variable to the appropriate section model
             currentSection = section
             
-            if section.numOfTakes == 0 {
+            if section.totalTakes == 0 {
                 print("got here 1")
                 //Starting Situation
 //                let newStarterView = self.emptyStarterView
@@ -254,7 +276,7 @@ class SectionViewController: UIViewController {
             else {
                 print("got here 2")
                 //Set the number of takes for this view controller
-                numOfTakes = Int(section.numOfTakes)
+                totalTakes = Int(section.totalTakes)
                 
                 //Perform a fetch using the fetchedResultsController
                 do {
@@ -264,11 +286,7 @@ class SectionViewController: UIViewController {
                 }
                 configureTableView()
                 
-                //DELETE
-                let testView = UIView()
-                testView.backgroundColor = .clear
-                view.addSubview(testView)
-                testView.pin(to: view)
+
                 
                 
 //                tableView.reloadData()
@@ -279,7 +297,7 @@ class SectionViewController: UIViewController {
     }
     
     
-    func updateNumOfTakes() {
+    func iterateNumOfTakes() {
         let request = Section.fetchRequest() as NSFetchRequest<Section>
         let indexPred = NSPredicate(format: "index == %i", tag)
         let projectPred = NSPredicate(format: "project == %@", currentProject!)
@@ -290,8 +308,8 @@ class SectionViewController: UIViewController {
             //Get the appropriate section to update
             let sections = try context.fetch(request)
             let section = sections[0]
-            section.numOfTakes += 1
-            print("section.numOfTakes: \(section.numOfTakes)")
+            section.totalTakes += 1
+            print("section.numOfTakes: \(section.totalTakes)")
             //Save the changes
             try self.context.save()
             
@@ -299,19 +317,38 @@ class SectionViewController: UIViewController {
             fatalError("\(err)")
         }
     }
+    
+    func resetSection() {
+        let request = Section.fetchRequest() as NSFetchRequest<Section>
+        let indexPred = NSPredicate(format: "index == %i", tag)
+        let projectPred = NSPredicate(format: "project == %@", currentProject!)
+        let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPred, projectPred])
+        request.predicate = pred
+        
+        do {
+            //Get the appropriate section to update
+            let sections = try context.fetch(request)
+            let section = sections[0]
+            section.totalTakes = 0
+            section.name = "Section \(section.index)"
+        } catch let err {
+            print(err)
+        }
+            
+    }
 
     func addTakeData() {
         
         //Update the section model's numOfTakes variable
-        updateNumOfTakes()
+        iterateNumOfTakes()
 
         //Create a take
         //let take = Take(context: self.context)
         let take = NSEntityDescription.insertNewObject(forEntityName: "Take", into: context) as! Take // NSManagedObject
-        numOfTakes += 1
-        print("numOfTakes: \(numOfTakes)")
-        take.name = "Take \(numOfTakes)"
-        take.index = Int64(numOfTakes)
+        totalTakes += 1
+        print("numOfTakes: \(totalTakes)")
+        take.name = "Take \(totalTakes)"
+        take.index = Int64(totalTakes)
         take.section = currentSection
         take.audioFilePath = timeOfLastRecording
                 
@@ -375,12 +412,21 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
                 
         //cell.set(label: "Take \(indexPath.row+1)", section: "Section \(self.tag)")
         
+            
         //Set the cell's selected background view
         let selectedBackgroundView = SelectedSectionBackgroundView()
         cell.selectedBackgroundView = selectedBackgroundView
         
         //Assign the recordTapped action which will be executed when the user taps the plus button
         cell.recordTapped = { /*(cell) in */
+            
+            //Deselecting the cell if it is currently selected
+            if let indexPathForSelectedRow = tableView.indexPathForSelectedRow,
+                indexPathForSelectedRow == indexPath {
+                tableView.deselectRow(at: indexPath, animated: false)
+                self.sectionDelegate?.takeDeSelected(sectionIndex: self.tag)
+            }
+            
             //tableView.removeFromSuperview()
             //self.view = self.recordingView
             tableView.removeFromSuperview()
@@ -400,11 +446,24 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
             
             //To start playing
             if Conductor.shared.data.isPlaying != true {
+                                
                 //Tell the conductor what take number is being recorded for that section
                 Conductor.shared.numOfTakes = indexPath.row+1
 
-                //Tell the conductor what file to read
-                Conductor.shared.readToFileName = self.fetchAudioPath(indexPath.row+1)
+                //DELETE THIS
+                print("indexPath.row+1: \(indexPath.row+1)")
+                
+                //ADDITION
+                // Fetch Take
+                let fetchedTake = self.fetchedResultsController.object(at: indexPath)
+                print("currentTake: \(fetchedTake)")
+                         
+                //ADDITION
+                Conductor.shared.readToFileName = fetchedTake.audioFilePath
+                
+                
+//                //Tell the conductor what file to read
+//                Conductor.shared.readToFileName = self.fetchAudioPath(indexPath.row+1)
 
                 Conductor.shared.data.isPlaying.toggle()
                 cell.playPauseButton.isSelected = true
@@ -412,19 +471,36 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
             }
             //To stop playing
             else {
-                Conductor.shared.data.isPlaying.toggle()
-                cell.playPauseButton.isSelected = false
-                cell.updateButton(playing: false)
+                // Fetch Take
+                let fetchedTake = self.fetchedResultsController.object(at: indexPath)
+                
+                if Conductor.shared.readToFileName != fetchedTake.audioFilePath {
+//                if Conductor.shared.readToFileName != self.fetchAudioPath(indexPath.row+1) {
+                    //Tell the conductor the new file to read
+//                    Conductor.shared.readToFileName = self.fetchAudioPath(indexPath.row+1)
+                    Conductor.shared.readToFileName = fetchedTake.audioFilePath
+
+                    print("did i get here")
+                    cell.playPauseButton.isSelected = true
+                    cell.updateButton(playing: true)
+
+                    //Update the buttons and stop the conductor
+                    self.sectionDelegate?.interruptPlayingWithPlay(sectionTag: self.tag)
+
+
+//                    //Restart the conductor
+//                    Conductor.shared.data.isPlaying.toggle()
+                }
+                else {
+                    Conductor.shared.data.isPlaying.toggle()
+                    cell.playPauseButton.isSelected = false
+                    cell.updateButton(playing: false)
+                }
             }
         }
         return cell
     }
-    
-    //Selection Handling
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        sectionDelegate?.takeSelected()
-    }
-    
+        
     func goToLastCell(_ tableView: UITableView) {
         let indexPath = IndexPath(row: tableView.numberOfRows(inSection: 0)-1, section: 0)
         print("numOfRows: \(tableView.numberOfRows(inSection: 0)-1)")
@@ -432,12 +508,24 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         //self.tableView.setContentOffset( CGPoint(x: 0, y: 0) , animated: true)
     }
     
+    //Selection Handling
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Fetch Current Take
+        let fetchedTake = self.fetchedResultsController.object(at: indexPath)
+        
+        sectionDelegate?.takeSelected(index: self.tag, row: indexPath.row, take: fetchedTake)
+    }
+//    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+//        sectionDelegate?.takeDeSelected(index: self.tag)
+//    }
+    
     //Function for enabling deselection upon second tap 
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
 
         if let indexPathForSelectedRow = tableView.indexPathForSelectedRow,
             indexPathForSelectedRow == indexPath {
             tableView.deselectRow(at: indexPath, animated: false)
+            sectionDelegate?.takeDeSelected(sectionIndex: self.tag)
             return nil
         }
         return indexPath
@@ -481,7 +569,17 @@ extension SectionViewController: NSFetchedResultsControllerDelegate {
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
         print("tableview size: \(tableView.numberOfRows(inSection: 0))")
-        self.goToLastCell(self.tableView)
+        if (tableView.numberOfRows(inSection: 0)) == 0 {
+            tableView.removeFromSuperview()
+            let freshSectionView = emptyStarterView
+            view.addSubview(freshSectionView)
+            freshSectionView.pin(to: view)
+            resetSection()
+            //updateNumOfTakes()
+        }
+        else {
+            self.goToLastCell(self.tableView)
+        }
         //updateView()
     }
     
@@ -489,9 +587,12 @@ extension SectionViewController: NSFetchedResultsControllerDelegate {
         switch (type) {
         case .insert:
             if let indexPath = newIndexPath {
-                print("got in this bitch")
-                print("index path: \(indexPath)")
                 tableView.insertRows(at: [indexPath], with: .fade)
+            }
+            break;
+        case .delete:
+            if let indexPath = indexPath {
+                tableView.deleteRows(at: [indexPath], with: .fade)
             }
             break;
         default:

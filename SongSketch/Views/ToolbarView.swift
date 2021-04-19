@@ -19,6 +19,12 @@ class ToolbarView: UIView {
     var trashButton: UIButton!
     var editButton: UIButton!
     var notesButton: UIButton!
+    
+    //Button Functionality Closures -- Send these to the project view controller
+    var trashTapped: (() -> Void)?
+    var editTapped: (() -> Void)?
+    var notesTapped: (() -> Void)?
+
 
     
     override init (frame: CGRect) {
@@ -56,7 +62,8 @@ class ToolbarView: UIView {
         trashButton.setImage(trash, for: .normal)
         trashButton.tintColor = .gray
         trashButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-        //metronomeButton.addTarget(self, action: #selector(pressRecord), for: .touchUpInside)
+        trashButton.isEnabled = false
+        trashButton.addTarget(self, action: #selector(pressTrash), for: .touchUpInside)
         //metronomeButton.frame = addNewTakeButton.currentImage!.accessibilityFrame
         self.addSubview(trashButton)
         trashButton.translatesAutoresizingMaskIntoConstraints = false
@@ -71,7 +78,8 @@ class ToolbarView: UIView {
         editButton.setImage(edit, for: .normal)
         editButton.tintColor = .gray
         editButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-        //metronomeButton.addTarget(self, action: #selector(pressRecord), for: .touchUpInside)
+        editButton.isEnabled = false
+        editButton.addTarget(self, action: #selector(pressEdit), for: .touchUpInside)
         //metronomeButton.frame = addNewTakeButton.currentImage!.accessibilityFrame
         self.addSubview(editButton)
         editButton.translatesAutoresizingMaskIntoConstraints = false
@@ -87,7 +95,8 @@ class ToolbarView: UIView {
         notesButton.setImage(notes, for: .normal)
         notesButton.tintColor = .gray
         notesButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
-        //metronomeButton.addTarget(self, action: #selector(pressRecord), for: .touchUpInside)
+        notesButton.isEnabled = false
+        notesButton.addTarget(self, action: #selector(pressNotes), for: .touchUpInside)
         //metronomeButton.frame = addNewTakeButton.currentImage!.accessibilityFrame
         self.addSubview(notesButton)
         notesButton.translatesAutoresizingMaskIntoConstraints = false
@@ -96,4 +105,17 @@ class ToolbarView: UIView {
         NSLayoutConstraint(item: notesButton!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 1).isActive = true
         NSLayoutConstraint(item: notesButton!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 1, constant: 1).isActive = true
     }
+    
+    
+    //Button Actions
+    @objc func pressTrash() {
+        trashTapped?()
+    }
+    @objc func pressEdit() {
+        editTapped?()
+    }
+    @objc func pressNotes() {
+        notesTapped?()
+    }
+    
 }

@@ -14,6 +14,10 @@ import CoreData
 class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
     
+    //Blurring Property
+    var animator: UIViewPropertyAnimator!
+
+    
     // Reference to managed object context -- CORE DATA
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
@@ -328,7 +332,122 @@ extension ProjectViewController: FileFinishedDelegate {
 
 
 extension ProjectViewController: SectionViewControllerDelegate {
-    func takeSelected() {
+
+    func interruptPlayingWithPlay(sectionTag: Int) {
+        for i in 0..<sectionViewControllers.count {
+            if sectionViewControllers[i].tag != sectionTag {
+                let sectionTV = sectionViewControllers[i].tableView
+                for cell in sectionTV.visibleCells {
+                    let indexPath = sectionTV.indexPath(for: cell)
+                    if let cell = sectionTV.cellForRow(at: indexPath!) as? TakeView {
+                        if cell.playPauseButton.isSelected {
+                            cell.playPauseButton.isSelected = false
+                            Conductor.shared.data.isPlaying.toggle()
+                            cell.updateButton(playing: false)
+                        } else {
+                        print("empty")
+                        }
+                    }
+                }
+            }
+        }
+        //restart the conductor
+        Conductor.shared.data.isPlaying.toggle()
+    }
+
+    func takeDeSelected(sectionIndex: Int) {
+        
+        //Deblurring Functionality
+        for i in 0..<6 {
+            let currentSection = sectionViewControllers[i]
+            if currentSection.tag != sectionIndex {
+                print("got here")
+                currentSection.blockerView?.removeFromSuperview()
+            }
+            
+            //Scrolling Reenabling
+            currentSection.tableView.isScrollEnabled = true
+        }
+        
+        toolbarView.editButton.isEnabled = false
+        toolbarView.notesButton.isEnabled = false
+        toolbarView.trashButton.isEnabled = false
+        toolbarView.editButton.tintColor = .gray
+        toolbarView.notesButton.tintColor = .gray
+        toolbarView.trashButton.tintColor = .gray
+    }
+    
+
+    func takeSelected(index: Int, row: Int, take: Take) {
+        
+        for i in 0..<6 {
+            let currentSection = sectionViewControllers[i]
+
+            //Blurring functionality
+            if currentSection.tag != index {
+                currentSection.blockerView = UIView()
+                currentSection.blockerView?.backgroundColor = .clear
+                currentSection.view.addSubview(currentSection.blockerView!)
+                currentSection.blockerView?.pin(to: currentSection.view)
+                
+                //Blur Effect
+                currentSection.view.applyBlur(level: 1, view: (currentSection.blockerView!))
+
+            }
+            
+            //Scrolling Disabling
+            currentSection.tableView.isScrollEnabled = false
+        }
+        
+        toolbarView.trashTapped = {
+//            var currentSection = Section()
+//
+//            let sectionRequest = Section.fetchRequest() as NSFetchRequest<Section>
+//            let pred = NSPredicate(format: "index == %i", index)
+//            let projectPred = NSPredicate(format: "project == %@", self.currentProject)
+//            let predicate1 = NSCompoundPredicate(andPredicateWithSubpredicates: [pred, projectPred])
+//            sectionRequest.predicate = predicate1
+//
+//            do {
+//                let sections = try self.context.fetch(sectionRequest)
+//                let section = sections[0]
+//                currentSection = section
+//            } catch {
+//                print("couldn't grab section from core data")
+//            }
+//
+//            let request = Take.fetchRequest() as NSFetchRequest<Take>
+//            let takePred = NSPredicate(format: "index == %i", row+1)
+//            let sectionPred = NSPredicate(format: "section == %@", currentSection)
+//            let predicate2 = NSCompoundPredicate(andPredicateWithSubpredicates: [takePred, sectionPred])
+//            request.predicate = predicate2
+//
+//            do {
+//                //Get the appropriate section to update
+//                let takes = try self.context.fetch(request)
+//                let take = takes[0]
+//                print("take audio path: \(take.audioFilePath)")
+//                self.context.delete(take)
+//                try self.context.save()
+//            } catch let err {
+//                print(err)
+//            }
+            let currSection = Int(take.section.index)
+            self.takeDeSelected(sectionIndex: currSection)
+            self.context.delete(take)
+            
+            //Save Core Data
+            do {
+                try self.context.save()
+            } catch let err {
+                print(err)
+            }
+        }
+        
+        
+        toolbarView.editButton.isEnabled = true
+        toolbarView.notesButton.isEnabled = true
+        toolbarView.trashButton.isEnabled = true
         toolbarView.editButton.tintColor = .white
         toolbarView.notesButton.tintColor = .white
         toolbarView.trashButton.tintColor = .white
