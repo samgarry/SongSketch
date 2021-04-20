@@ -56,7 +56,7 @@ class ToolbarView: UIView {
 //        notesButton.tintColor = .gray
         //notesImage = (notes?.withTintColor(.gray, renderingMode: .alwaysTemplate))!
         
-        //Metronome Button Properties
+        //Trash Button Properties
         trashButton = UIButton()
         let trash = UIImage(systemName: "trash")
         trashButton.setImage(trash, for: .normal)
@@ -76,7 +76,7 @@ class ToolbarView: UIView {
         editButton = UIButton()
         let edit = UIImage(systemName: "pencil")
         editButton.setImage(edit, for: .normal)
-        editButton.tintColor = .gray
+        editButton.tintColor = .clear
         editButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
         editButton.isEnabled = false
         editButton.addTarget(self, action: #selector(pressEdit), for: .touchUpInside)
@@ -93,7 +93,7 @@ class ToolbarView: UIView {
         notesButton = UIButton()
         let notes = UIImage(systemName: "book")
         notesButton.setImage(notes, for: .normal)
-        notesButton.tintColor = .gray
+        notesButton.tintColor = .clear
         notesButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
         notesButton.isEnabled = false
         notesButton.addTarget(self, action: #selector(pressNotes), for: .touchUpInside)

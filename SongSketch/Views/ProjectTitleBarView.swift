@@ -26,8 +26,8 @@ class ProjectTitleBarView: UIView {
     override init (frame: CGRect) {
         super.init(frame: frame)
         
-        setupTitle()
         setupBackButton()
+        setupTitle()
     }
     
     required init?(coder: NSCoder) {
@@ -36,8 +36,9 @@ class ProjectTitleBarView: UIView {
     
     //PROBABLY DELETE THIS AND USE PROTOCOL/DELEGATION FOR THE SONG TITLE
     public func setInitialTitle() {
-        let string = initialTitle.dropLast(9)
-        songLabel.text = String(string)
+//        let string = initialTitle.dropLast(9)
+//        songLabel.text = String(string)
+        songLabel.text = initialTitle
     }
     
     func setupBackButton() {
@@ -92,10 +93,23 @@ class ProjectTitleBarView: UIView {
         self.addSubview(songLabel)
         
         NSLayoutConstraint(item: songLabel!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 1, constant: 10).isActive = true
+        
+//        let rawPriority = UILayoutPriority.defaultLow.rawValue
+//        let labelPriority = UILayoutPriority(rawPriority + 1)
+//        songLabel.setContentHuggingPriority(labelPriority, for: .horizontal)
+
+        
+        let sideConstraint = NSLayoutConstraint(item: songLabel!, attribute: .leading, relatedBy: .equal, toItem: backButton, attribute: .trailing, multiplier: 1, constant: 10)
+        sideConstraint.priority = UILayoutPriority(rawValue: 101)
+        sideConstraint.isActive = true
+        let centerConstraint = NSLayoutConstraint(item: songLabel!, attribute: .centerX, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1, constant: 10)
+        //centerConstraint.priority = UILayoutPriority(UILayoutPriority.defaultLow.rawValue)
+        centerConstraint.priority = UILayoutPriority(rawValue: 100)
+        centerConstraint.isActive = true
         NSLayoutConstraint.activate([
-            songLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            songLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            songLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor)
+            songLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor)
+            //songLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+//            songLabel.leadingAnchor.constraint(equalTo: backButton.trailingAnchor)
         ])
     }
     

@@ -40,7 +40,8 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     
     
     //Variables for Accessing Corresponding Project in Core Data
-    var currentProject = Project()
+    //var currentProject = Project()
+    var currentProject: Project!
     let projectTag: String
     
     //__________________________________________________________________________________________
@@ -161,8 +162,10 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //Set the Delegate
+        //Set the Delegates
         Conductor.shared.fileFinishedDelegate = self
+        //titlebarView.songLabel.inputDelegate = self
+        titlebarView.songLabel.delegate = self
         
         //Create the section view controllers
         var i = 1
@@ -187,7 +190,8 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     override func viewDidLayoutSubviews() {
         //Set the section view controllers' cell properties and set up its table view
         for i in 0..<sectionViewControllers.count {
-            sectionViewControllers[i].cellSize = sizeSetter.frame.height
+            sectionViewControllers[i].cellWidth = sizeSetter.frame.width
+            sectionViewControllers[i].cellHeight = sizeSetter.frame.height
             //sections[i].configureTableView()
             sizeSetter.removeFromSuperview() //Delete the unnecessary view now that the size has been retreived
         }
@@ -222,7 +226,7 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
         titlebarView.translatesAutoresizingMaskIntoConstraints = false
         toolbarView.translatesAutoresizingMaskIntoConstraints = false
         
-        titlebarView.initialTitle = projectTag
+        titlebarView.initialTitle = currentProject.name
         titlebarView.setInitialTitle()
 
         //Title Bar Constraint Set up
@@ -269,7 +273,7 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
         sizeSetter.leadingAnchor.constraint(equalTo: leftSpacer.trailingAnchor).isActive = true
         sizeSetter.topAnchor.constraint(equalTo: sectionContainerView.topAnchor).isActive = true
         sizeSetter.widthAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
-        sizeSetter.heightAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
+        sizeSetter.heightAnchor.constraint(equalTo: sectionContainerView.heightAnchor, multiplier: 0.31).isActive = true
     }
 
     //Set up the section view controllers
@@ -303,7 +307,7 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
         
         //Set the height and width of the section view controllers
         sectionViewControllers[index].view.widthAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
-        sectionViewControllers[index].view.heightAnchor.constraint(equalTo: sectionContainerView.widthAnchor, multiplier: 0.40).isActive = true
+        sectionViewControllers[index].view.heightAnchor.constraint(equalTo: sectionContainerView.heightAnchor, multiplier: 0.31).isActive = true
     }
 }
 
@@ -331,6 +335,7 @@ extension ProjectViewController: FileFinishedDelegate {
 }
 
 
+//Delegate for for selection/unselection and toolbar functionality of sections inside project
 extension ProjectViewController: SectionViewControllerDelegate {
 
     func interruptPlayingWithPlay(sectionTag: Int) {
@@ -369,11 +374,11 @@ extension ProjectViewController: SectionViewControllerDelegate {
             currentSection.tableView.isScrollEnabled = true
         }
         
-        toolbarView.editButton.isEnabled = false
-        toolbarView.notesButton.isEnabled = false
+//        toolbarView.editButton.isEnabled = false
+//        toolbarView.notesButton.isEnabled = false
         toolbarView.trashButton.isEnabled = false
-        toolbarView.editButton.tintColor = .gray
-        toolbarView.notesButton.tintColor = .gray
+//        toolbarView.editButton.tintColor = .gray
+//        toolbarView.notesButton.tintColor = .gray
         toolbarView.trashButton.tintColor = .gray
     }
     
@@ -392,50 +397,55 @@ extension ProjectViewController: SectionViewControllerDelegate {
                 
                 //Blur Effect
                 currentSection.view.applyBlur(level: 1, view: (currentSection.blockerView!))
-
             }
             
             //Scrolling Disabling
             currentSection.tableView.isScrollEnabled = false
         }
         
+        //Update the Toolbar Buttons
+//        toolbarView.editButton.isEnabled = true
+//        toolbarView.notesButton.isEnabled = true
+        toolbarView.trashButton.isEnabled = true
+//        toolbarView.editButton.tintColor = .white
+//        toolbarView.notesButton.tintColor = .white
+        toolbarView.trashButton.tintColor = .white
+        
+        //Toolbar Closures
         toolbarView.trashTapped = {
-//            var currentSection = Section()
-//
-//            let sectionRequest = Section.fetchRequest() as NSFetchRequest<Section>
-//            let pred = NSPredicate(format: "index == %i", index)
-//            let projectPred = NSPredicate(format: "project == %@", self.currentProject)
-//            let predicate1 = NSCompoundPredicate(andPredicateWithSubpredicates: [pred, projectPred])
-//            sectionRequest.predicate = predicate1
-//
-//            do {
-//                let sections = try self.context.fetch(sectionRequest)
-//                let section = sections[0]
-//                currentSection = section
-//            } catch {
-//                print("couldn't grab section from core data")
-//            }
-//
-//            let request = Take.fetchRequest() as NSFetchRequest<Take>
-//            let takePred = NSPredicate(format: "index == %i", row+1)
-//            let sectionPred = NSPredicate(format: "section == %@", currentSection)
-//            let predicate2 = NSCompoundPredicate(andPredicateWithSubpredicates: [takePred, sectionPred])
-//            request.predicate = predicate2
-//
-//            do {
-//                //Get the appropriate section to update
-//                let takes = try self.context.fetch(request)
-//                let take = takes[0]
-//                print("take audio path: \(take.audioFilePath)")
-//                self.context.delete(take)
-//                try self.context.save()
-//            } catch let err {
-//                print(err)
-//            }
+            //Deselect the section before deleting it
             let currSection = Int(take.section.index)
             self.takeDeSelected(sectionIndex: currSection)
-            self.context.delete(take)
             
+            //Delete the take's audio file
+//            let file = Conductor.shared.getDocumentsDirectory().appendingPathComponent(take.audioFilePath)
+//            let file = "\(AppDelegate.applicationDocumentsDirectory())/\(take.audioFilePath)"
+//            let file = "\(Conductor.shared.getDocumentsDirectory())/\(take.audioFilePath)"
+            
+            //Find take's corresponding audio file in documents directory on device
+            let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+            let documentDirectory = paths[0]
+            let filePath = documentDirectory.appendingFormat("/" + take.audioFilePath)
+            
+            //Delete the audio file from the device's directory
+            do {
+                let fileManager = FileManager.default
+                // Check if file exists
+                if fileManager.fileExists(atPath: filePath) {
+                    // Delete file
+                    try fileManager.removeItem(atPath: filePath)
+                    print("file was deleted")
+                } else {
+                    print("File does not exist")
+                }
+            }
+            catch let error as NSError {
+                print("An error took place: \(error)")
+            }
+            
+            //Delete the take model
+            self.context.delete(take)
+
             //Save Core Data
             do {
                 try self.context.save()
@@ -443,13 +453,33 @@ extension ProjectViewController: SectionViewControllerDelegate {
                 print(err)
             }
         }
+    }
+}
+
+
+
+//Delegate for song label functionality
+extension ProjectViewController: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
         
-        
-        toolbarView.editButton.isEnabled = true
-        toolbarView.notesButton.isEnabled = true
-        toolbarView.trashButton.isEnabled = true
-        toolbarView.editButton.tintColor = .white
-        toolbarView.notesButton.tintColor = .white
-        toolbarView.trashButton.tintColor = .white
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == titlebarView.songLabel {
+            textField.resignFirstResponder()
+            print("made it into here")
+            
+            //Reset the project title in core data
+            currentProject.name = textField.text ?? ""
+            //Save Core Data
+            do {
+                try self.context.save()
+            } catch let err {
+                print(err)
+            }
+            
+            return false
+        }
+        return true
     }
 }

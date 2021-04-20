@@ -23,7 +23,7 @@ class ProjectCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         self.backgroundColor = UIColor(red: 0/255, green: 79/255, blue: 195/255, alpha: 0.35)
-        self.layer.cornerRadius = 10
+//        self.layer.cornerRadius = 10
         self.clipsToBounds = true
         self.layer.borderWidth = 1
         self.layer.borderColor = UIColor.white.cgColor

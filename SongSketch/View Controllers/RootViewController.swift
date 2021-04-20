@@ -25,13 +25,13 @@ class RootViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 2/255, green: 41/255, blue: 86/255, alpha: 1)
         
-        
         createContainers()
         configureTableView()
         
         //Perform a fetch using the fetchedResultsController
         do {
             try self.fetchedResultsController.performFetch()
+//            tableView.reloadData()
         } catch let err {
             print(err)
         }
@@ -41,10 +41,24 @@ class RootViewController: UIViewController {
         
         //Closure
         footerCell.addProject = {
-            print("pressed")
             self.addProjectData()
         }
     }
+    
+//    override func viewDidAppear(_ animated: Bool) {
+//        tableView.reloadData()
+//
+////        createContainers()
+////        configureTableView()
+////
+////        //Perform a fetch using the fetchedResultsController
+////        do {
+////            try self.fetchedResultsController.performFetch()
+////            tableView.reloadData()
+////        } catch let err {
+////            print(err)
+////        }
+//    }
     
     func configureTableView() {
         tableContainerView.addSubview(tableView)
@@ -77,9 +91,9 @@ class RootViewController: UIViewController {
         NSLayoutConstraint(item: tableContainerView, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0).isActive = true
     }
     
-    func createProject() {
-        addProjectData()
-    }
+//    func createProject() {
+//        addProjectData()
+//    }
     
     func startProject(_ projectIndex: String) {
         //Create and go to the new corresponding view controller
@@ -93,6 +107,19 @@ class RootViewController: UIViewController {
         let projectIndex = formatter.string(from: Date())
 //      return "\(fileName).aif"
         return projectIndex
+    }
+    
+    func makeDateLegible(_ date: String) -> String {
+        //Date
+        let day = date[0..<2]
+        let month = date[2..<5]
+        let year = date[5..<7]
+        //Time
+        let hour = date[8..<10]
+        let min = date[10..<12]
+        let sec = date[12..<14]
+
+        return "\(month) \(day), 20\(year) \(hour):\(min):\(sec)"
     }
     
     //__________________________________________________________________________________________
@@ -128,7 +155,7 @@ class RootViewController: UIViewController {
     func addProjectData() {
         let project = NSEntityDescription.insertNewObject(forEntityName: "Project", into: context) as! Project // NSManagedObject
         let currentProjectTitle = dateString()
-        project.name = currentProjectTitle
+        project.name = makeDateLegible(currentProjectTitle)
         project.index = currentProjectTitle
         
         //Save Data
@@ -175,11 +202,37 @@ extension RootViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
+            //Fetch Project
+            let project = fetchedResultsController.object(at: indexPath)
+            
+            //Delete the fetched project
+            context.delete(project)
+            
+            //Save the Core Data
+            do {
+                try context.save()
+            } catch let err {
+                print(err)
+            }
+        }
+    }
+    
+    func configureCell(_ cell: ProjectCell, at indexPath: IndexPath) {
+        //let project = fetchedResultsController.object(at: indexPath)
+        tableView.reloadRows(at: [indexPath], with: UITableView.RowAnimation.automatic) //try other animations
+        //tableView.reloadData()
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
 }
-
 
 
 //NSFetchedResultsController Functionality
@@ -200,6 +253,14 @@ extension RootViewController: NSFetchedResultsControllerDelegate {
                 tableView.insertRows(at: [indexPath], with: .fade)
             }
             break;
+        case .delete:
+            if let indexPath = indexPath {
+                tableView.deleteRows(at: [indexPath], with: .fade)
+            }
+        case .update:
+            if let indexPath = indexPath, let cell = tableView.cellForRow(at: indexPath) as? ProjectCell {
+                configureCell(cell, at: indexPath)
+            }
         default:
             print("...")
         }

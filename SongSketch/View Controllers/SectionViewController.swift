@@ -31,7 +31,9 @@ class SectionViewController: UIViewController {
 
     //Variables
     var tag: Int
-    var cellSize: CGFloat
+//    var cellSize: CGFloat
+    var cellWidth: CGFloat
+    var cellHeight: CGFloat
     var empty: Bool = true //Checks if the section has no takes yet
     var totalTakes: Int
     var timeOfLastRecording: String
@@ -53,7 +55,7 @@ class SectionViewController: UIViewController {
     var takeModels: [Take]?
     
     //Variable for Accessing Corresponding Section in Core Data
-    var currentSection = Section()
+    var currentSection: Section?
     
     //Variable for Accessing Overall Corresponding Project in Core Data
     public var currentProject: Project?
@@ -64,7 +66,9 @@ class SectionViewController: UIViewController {
     //INITS
     init(_ index: Int) {
         tag = index
-        cellSize = 0.0
+//        cellSize = 0.0
+        cellHeight = 0.0
+        cellWidth = 0.0
         totalTakes = 0
         timeOfLastRecording = ""
         
@@ -98,7 +102,7 @@ class SectionViewController: UIViewController {
 //            self.emptyStarterView.removeFromSuperview()
             self.view = self.holderView
             let newRecordingView = self.recordingView
-            newRecordingView.frame = CGRect(width: self.cellSize, height: self.cellSize)
+            newRecordingView.frame = CGRect(width: self.cellWidth, height: self.cellHeight)
             self.view.addSubview(self.recordingView)
             //self.view.addSubview(self.tableView)
             self.recording(1)
@@ -232,9 +236,13 @@ class SectionViewController: UIViewController {
         let fetchRequest: NSFetchRequest<Take> = Take.fetchRequest()
 
         //Configure Fetch Request
-        let pred = NSPredicate(format: "section == %@", self.currentSection)
-        fetchRequest.predicate = pred
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "index", ascending: true)]
+        if let currSection = self.currentSection {
+            let pred = NSPredicate(format: "section == %@", currSection)
+            fetchRequest.predicate = pred
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "index", ascending: true)]
+        } else {
+            print("currentSection hasn't been set")
+        }
 
         print("Fetch Request size: \(try! context.fetch(fetchRequest).count)")
 
@@ -251,10 +259,14 @@ class SectionViewController: UIViewController {
     //Fetch the appropriate section model from Core Data
     func setUpSection() {
         let request = Section.fetchRequest() as NSFetchRequest<Section>
-        let indexPredicate = NSPredicate(format: "index == %i", tag)
-        let projectPredicate = NSPredicate(format: "project == %@", currentProject!)
-        let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPredicate, projectPredicate])
-        request.predicate = pred
+        if let currProject = currentProject {
+            let indexPredicate = NSPredicate(format: "index == %i", tag)
+            let projectPredicate = NSPredicate(format: "project == %@", currProject)
+            let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPredicate, projectPredicate])
+            request.predicate = pred
+        } else {
+            print("currentProject was not set")
+        }
         do {
             //Grab the appropriate section
             let sections = try context.fetch(request)
@@ -285,10 +297,6 @@ class SectionViewController: UIViewController {
                     print(err)
                 }
                 configureTableView()
-                
-
-                
-                
 //                tableView.reloadData()
             }
         } catch let err {
@@ -299,10 +307,14 @@ class SectionViewController: UIViewController {
     
     func iterateNumOfTakes() {
         let request = Section.fetchRequest() as NSFetchRequest<Section>
-        let indexPred = NSPredicate(format: "index == %i", tag)
-        let projectPred = NSPredicate(format: "project == %@", currentProject!)
-        let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPred, projectPred])
-        request.predicate = pred
+        if let currProject = currentProject {
+            let indexPred = NSPredicate(format: "index == %i", tag)
+            let projectPred = NSPredicate(format: "project == %@", currProject)
+            let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPred, projectPred])
+            request.predicate = pred
+        } else {
+            print("currentProject was not set")
+        }
         
         do {
             //Get the appropriate section to update
@@ -320,21 +332,28 @@ class SectionViewController: UIViewController {
     
     func resetSection() {
         let request = Section.fetchRequest() as NSFetchRequest<Section>
-        let indexPred = NSPredicate(format: "index == %i", tag)
-        let projectPred = NSPredicate(format: "project == %@", currentProject!)
-        let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPred, projectPred])
-        request.predicate = pred
+        if let currProject = currentProject {
+            let indexPred = NSPredicate(format: "index == %i", tag)
+            let projectPred = NSPredicate(format: "project == %@", currProject)
+            let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [indexPred, projectPred])
+            request.predicate = pred
+        } else {
+            print("currentProject was not set")
+        }
         
         do {
             //Get the appropriate section to update
             let sections = try context.fetch(request)
-            let section = sections[0]
-            section.totalTakes = 0
-            section.name = "Section \(section.index)"
+            if sections.count > 0 {
+                let section = sections[0]
+                section.totalTakes = 0
+                section.name = "Section \(section.index)"
+            } else {
+                print("sections is empty")
+            }
         } catch let err {
             print(err)
         }
-            
     }
 
     func addTakeData() {
@@ -349,7 +368,11 @@ class SectionViewController: UIViewController {
         print("numOfTakes: \(totalTakes)")
         take.name = "Take \(totalTakes)"
         take.index = Int64(totalTakes)
-        take.section = currentSection
+        if let currSection = self.currentSection {
+            take.section = currSection
+        } else {
+            print("currentSection hasn't been set")
+        }
         take.audioFilePath = timeOfLastRecording
                 
         //Save Data
@@ -361,11 +384,16 @@ class SectionViewController: UIViewController {
     }
     
     func fetchAudioPath(_ indexPath: Int) -> String {
+        
         let request = Take.fetchRequest() as NSFetchRequest<Take>
-        let sectionPred = NSPredicate(format: "section == %@", currentSection)
-        let takeIndexPred = NSPredicate(format: "index == %i", indexPath)
-        let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [sectionPred, takeIndexPred])
-        request.predicate = pred
+        if let currSection = self.currentSection {
+            let sectionPred = NSPredicate(format: "section == %@", currSection)
+            let takeIndexPred = NSPredicate(format: "index == %i", indexPath)
+            let pred = NSCompoundPredicate(andPredicateWithSubpredicates: [sectionPred, takeIndexPred])
+            request.predicate = pred
+        } else {
+            print("currentSection hasn't been set")
+        }
         
         do {
             let fetch = try context.fetch(request)
@@ -431,7 +459,7 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
             //self.view = self.recordingView
             tableView.removeFromSuperview()
             let newRecordingView = self.recordingView
-            newRecordingView.frame = CGRect(width: self.cellSize, height: self.cellSize)
+            newRecordingView.frame = CGRect(width: self.cellWidth, height: self.cellHeight)
             self.view.addSubview(self.recordingView)
             //self.holderView.addSubview(self.recordingView)
 //            self.view.addSubview(self.recordingView)
@@ -536,7 +564,7 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         var visibleRect = CGRect()
         visibleRect.origin = tableView.contentOffset
         visibleRect.size = tableView.bounds.size
-        let visiblePoint = CGPoint(x: visibleRect.origin.x, y: visibleRect.origin.y + cellSize/2.0)
+        let visiblePoint = CGPoint(x: visibleRect.origin.x, y: visibleRect.origin.y + cellHeight/2.0)
 //        let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.midY)
         guard let indexPath = tableView.indexPathForRow(at: visiblePoint)
             else { return }
@@ -553,7 +581,7 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return cellSize
+        return cellHeight
     }
 }
 
@@ -570,12 +598,12 @@ extension SectionViewController: NSFetchedResultsControllerDelegate {
         tableView.endUpdates()
         print("tableview size: \(tableView.numberOfRows(inSection: 0))")
         if (tableView.numberOfRows(inSection: 0)) == 0 {
-            tableView.removeFromSuperview()
             let freshSectionView = emptyStarterView
             view.addSubview(freshSectionView)
             freshSectionView.pin(to: view)
+            totalTakes = 0
             resetSection()
-            //updateNumOfTakes()
+            tableView.removeFromSuperview()
         }
         else {
             self.goToLastCell(self.tableView)
