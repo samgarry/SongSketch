@@ -29,7 +29,7 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     let titlebarView = ProjectTitleBarView()
     let topContainerView = UIView()
     var sectionContainerView = UIView()
-
+    var editPopUpView: EditPopUpView!
 
     
     //NEW STUFF
@@ -43,6 +43,11 @@ class ProjectViewController: UIViewController, AVAudioRecorderDelegate, AVAudioP
     //var currentProject = Project()
     var currentProject: Project!
     let projectTag: String
+    
+    //Variables for holding a section/take to edit the name of using the edit popup window
+    var sectionToEdit: Section!
+    var takeToEdit: Take!
+    
     
     //__________________________________________________________________________________________
     //Core Data Functions
@@ -374,16 +379,17 @@ extension ProjectViewController: SectionViewControllerDelegate {
             currentSection.tableView.isScrollEnabled = true
         }
         
-//        toolbarView.editButton.isEnabled = false
+        //Update the Toolbar Buttons
+        toolbarView.editButton.isEnabled = false
 //        toolbarView.notesButton.isEnabled = false
         toolbarView.trashButton.isEnabled = false
-//        toolbarView.editButton.tintColor = .gray
+        toolbarView.editButton.tintColor = .gray
 //        toolbarView.notesButton.tintColor = .gray
         toolbarView.trashButton.tintColor = .gray
     }
     
 
-    func takeSelected(index: Int, row: Int, take: Take) {
+    func takeSelected(index: Int, take: Take) {
         
         for i in 0..<6 {
             let currentSection = sectionViewControllers[i]
@@ -404,10 +410,10 @@ extension ProjectViewController: SectionViewControllerDelegate {
         }
         
         //Update the Toolbar Buttons
-//        toolbarView.editButton.isEnabled = true
+        toolbarView.editButton.isEnabled = true
 //        toolbarView.notesButton.isEnabled = true
         toolbarView.trashButton.isEnabled = true
-//        toolbarView.editButton.tintColor = .white
+        toolbarView.editButton.tintColor = .white
 //        toolbarView.notesButton.tintColor = .white
         toolbarView.trashButton.tintColor = .white
         
@@ -416,11 +422,6 @@ extension ProjectViewController: SectionViewControllerDelegate {
             //Deselect the section before deleting it
             let currSection = Int(take.section.index)
             self.takeDeSelected(sectionIndex: currSection)
-            
-            //Delete the take's audio file
-//            let file = Conductor.shared.getDocumentsDirectory().appendingPathComponent(take.audioFilePath)
-//            let file = "\(AppDelegate.applicationDocumentsDirectory())/\(take.audioFilePath)"
-//            let file = "\(Conductor.shared.getDocumentsDirectory())/\(take.audioFilePath)"
             
             //Find take's corresponding audio file in documents directory on device
             let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
@@ -453,12 +454,21 @@ extension ProjectViewController: SectionViewControllerDelegate {
                 print(err)
             }
         }
+        
+        toolbarView.editTapped = {
+            self.editPopUpView = EditPopUpView(take: take)
+            self.editPopUpView.sectionTextField.delegate = self
+            self.editPopUpView.takeTextField.delegate = self
+            self.view.addSubview(self.editPopUpView)
+            self.sectionToEdit = take.section
+            self.takeToEdit = take
+        }
     }
 }
 
 
 
-//Delegate for song label functionality
+//Delegate for the Project Title Bar UITextField functionalities
 extension ProjectViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         
@@ -467,10 +477,10 @@ extension ProjectViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == titlebarView.songLabel {
             textField.resignFirstResponder()
-            print("made it into here")
             
             //Reset the project title in core data
             currentProject.name = textField.text ?? ""
+            
             //Save Core Data
             do {
                 try self.context.save()
@@ -480,6 +490,46 @@ extension ProjectViewController: UITextFieldDelegate {
             
             return false
         }
+
+        if textField == editPopUpView.sectionTextField {
+            textField.resignFirstResponder()
+            
+            //Change the section being edited's section name
+            sectionToEdit.name = textField.text ?? ""
+            
+            //Save Core Data
+            do {
+                try self.context.save()
+            } catch let err {
+                print(err)
+            }
+            
+            //Deselect the section
+            self.takeDeSelected(sectionIndex: Int(sectionToEdit.index))
+            sectionViewControllers[Int(sectionToEdit.index-1)].tableView.reloadData()
+            
+            return false
+        }
+        
+        if textField == editPopUpView.takeTextField {
+            textField.resignFirstResponder()
+            
+            //Change the take being edited's take name
+            takeToEdit.name = textField.text ?? ""
+            
+            //Save Core Data
+            do {
+                try self.context.save()
+            } catch let err {
+                print(err)
+            }
+            
+            //Deselect the section
+            self.takeDeSelected(sectionIndex: Int(sectionToEdit.index))
+            
+            return false
+        }
+
         return true
     }
 }

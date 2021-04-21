@@ -102,7 +102,7 @@ class ProjectTitleBarView: UIView {
         let sideConstraint = NSLayoutConstraint(item: songLabel!, attribute: .leading, relatedBy: .equal, toItem: backButton, attribute: .trailing, multiplier: 1, constant: 10)
         sideConstraint.priority = UILayoutPriority(rawValue: 101)
         sideConstraint.isActive = true
-        let centerConstraint = NSLayoutConstraint(item: songLabel!, attribute: .centerX, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1, constant: 10)
+        let centerConstraint = NSLayoutConstraint(item: songLabel!, attribute: .centerX, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1, constant: 1)
         //centerConstraint.priority = UILayoutPriority(UILayoutPriority.defaultLow.rawValue)
         centerConstraint.priority = UILayoutPriority(rawValue: 100)
         centerConstraint.isActive = true

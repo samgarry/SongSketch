@@ -257,10 +257,13 @@ extension RootViewController: NSFetchedResultsControllerDelegate {
             if let indexPath = indexPath {
                 tableView.deleteRows(at: [indexPath], with: .fade)
             }
+            break;
         case .update:
             if let indexPath = indexPath, let cell = tableView.cellForRow(at: indexPath) as? ProjectCell {
+                print("this here matey got called")
                 configureCell(cell, at: indexPath)
             }
+            break;
         default:
             print("...")
         }

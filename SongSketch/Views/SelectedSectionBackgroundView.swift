@@ -13,7 +13,7 @@ class SelectedSectionBackgroundView: UIView {
         super.init(frame: frame)
         self.backgroundColor = .clear
         self.layer.cornerRadius = 10
-        self.layer.borderWidth = 1
+        self.layer.borderWidth = 2
         self.layer.borderColor = UIColor.yellow.cgColor
         self.layer.masksToBounds = true
     }

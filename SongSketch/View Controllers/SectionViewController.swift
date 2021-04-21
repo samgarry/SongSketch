@@ -10,7 +10,7 @@ import CoreData
 
 
 protocol SectionViewControllerDelegate {
-    func takeSelected(index: Int, row: Int, take: Take)
+    func takeSelected(index: Int, take: Take)
     func takeDeSelected(sectionIndex: Int)
     func interruptPlayingWithPlay(sectionTag: Int)
 }
@@ -59,6 +59,10 @@ class SectionViewController: UIViewController {
     
     //Variable for Accessing Overall Corresponding Project in Core Data
     public var currentProject: Project?
+    
+    
+    //Variable for knowing when a cell has been deleted vs. another change occuring in nsfetchedresultscontroller
+    var numOfCellsInTV: Int!
     
     //var takeModels = [Take]()
     
@@ -435,8 +439,6 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         cell.takeLabel.text = take.name
         cell.sectionLabel.text = take.section.name
         
-        print("take.name: \(take.name)")
-        print("section.name: \(take.section.name)")
                 
         //cell.set(label: "Take \(indexPath.row+1)", section: "Section \(self.tag)")
         
@@ -528,6 +530,10 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         }
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
         
     func goToLastCell(_ tableView: UITableView) {
         let indexPath = IndexPath(row: tableView.numberOfRows(inSection: 0)-1, section: 0)
@@ -541,7 +547,7 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         // Fetch Current Take
         let fetchedTake = self.fetchedResultsController.object(at: indexPath)
         
-        sectionDelegate?.takeSelected(index: self.tag, row: indexPath.row, take: fetchedTake)
+        sectionDelegate?.takeSelected(index: self.tag, take: fetchedTake)
     }
 //    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
 //        sectionDelegate?.takeDeSelected(index: self.tag)
@@ -580,6 +586,12 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
         }
     }
     
+    func configureCell(_ cell: TakeView, at indexPath: IndexPath) {
+        //let project = fetchedResultsController.object(at: indexPath)
+        tableView.reloadRows(at: [indexPath], with: UITableView.RowAnimation.automatic) //try other animations
+        //tableView.reloadData()
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return cellHeight
     }
@@ -591,24 +603,28 @@ extension SectionViewController: UITableViewDelegate, UITableViewDataSource {
 extension SectionViewController: NSFetchedResultsControllerDelegate {
     
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        //Check how many cells are in tableview before change
+        numOfCellsInTV = tableView.numberOfRows(inSection: 0)
         tableView.beginUpdates()
     }
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
-        print("tableview size: \(tableView.numberOfRows(inSection: 0))")
-        if (tableView.numberOfRows(inSection: 0)) == 0 {
-            let freshSectionView = emptyStarterView
-            view.addSubview(freshSectionView)
-            freshSectionView.pin(to: view)
-            totalTakes = 0
-            resetSection()
-            tableView.removeFromSuperview()
+        
+        //Check to see if a cell has been deleted or added
+        if tableView.numberOfRows(inSection: 0) != numOfCellsInTV {
+            if (tableView.numberOfRows(inSection: 0)) == 0 {
+                let freshSectionView = emptyStarterView
+                view.addSubview(freshSectionView)
+                freshSectionView.pin(to: view)
+                totalTakes = 0
+                resetSection()
+                tableView.removeFromSuperview()
+            }
+            else {
+                self.goToLastCell(self.tableView)
+            }
         }
-        else {
-            self.goToLastCell(self.tableView)
-        }
-        //updateView()
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
@@ -622,6 +638,14 @@ extension SectionViewController: NSFetchedResultsControllerDelegate {
             if let indexPath = indexPath {
                 tableView.deleteRows(at: [indexPath], with: .fade)
             }
+            break;
+        case .update:
+//            if let indexPath = indexPath, let cell = tableView.cellForRow(at: indexPath) as? TakeView {
+//                print("this lil shindig got called")
+//                configureCell(cell, at: indexPath)
+//            }
+            print("this shindig right here")
+            tableView.reloadData()
             break;
         default:
             print("...")

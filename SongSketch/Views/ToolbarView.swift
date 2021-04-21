@@ -76,7 +76,7 @@ class ToolbarView: UIView {
         editButton = UIButton()
         let edit = UIImage(systemName: "pencil")
         editButton.setImage(edit, for: .normal)
-        editButton.tintColor = .clear
+        editButton.tintColor = .gray
         editButton.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
         editButton.isEnabled = false
         editButton.addTarget(self, action: #selector(pressEdit), for: .touchUpInside)

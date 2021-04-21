@@ -37,6 +37,7 @@
 		8786C7F62627FB43008C2AA5 /* ProjectTableFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8786C7F52627FB43008C2AA5 /* ProjectTableFooter.swift */; };
 		8786C8072628C6DB008C2AA5 /* Project+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8786C8052628C6DB008C2AA5 /* Project+CoreDataClass.swift */; };
 		8786C8082628C6DB008C2AA5 /* Project+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8786C8062628C6DB008C2AA5 /* Project+CoreDataProperties.swift */; };
+		87BED068262F691A00520597 /* EditPopUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BED067262F691A00520597 /* EditPopUpView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +72,7 @@
 		8786C7F52627FB43008C2AA5 /* ProjectTableFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTableFooter.swift; sourceTree = "<group>"; };
 		8786C8052628C6DB008C2AA5 /* Project+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Project+CoreDataClass.swift"; sourceTree = "<group>"; };
 		8786C8062628C6DB008C2AA5 /* Project+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Project+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		87BED067262F691A00520597 /* EditPopUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPopUpView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +140,7 @@
 				87031BD6261411DB00D5F7B9 /* EmptySectionView.swift */,
 				87031BD92614120400D5F7B9 /* RecordingView.swift */,
 				87031BE82614F31F00D5F7B9 /* SelectedSectionBackgroundView.swift */,
+				87BED067262F691A00520597 /* EditPopUpView.swift */,
 				8786C7E42627899F008C2AA5 /* HomeScreen */,
 			);
 			path = Views;
@@ -276,6 +279,7 @@
 				8786C7DD26273869008C2AA5 /* RootViewController.swift in Sources */,
 				87031BAA2613D28700D5F7B9 /* AppDelegate.swift in Sources */,
 				8786C8082628C6DB008C2AA5 /* Project+CoreDataProperties.swift in Sources */,
+				87BED068262F691A00520597 /* EditPopUpView.swift in Sources */,
 				8712D3F5262CA96D006636E7 /* UIView+Blurring.swift in Sources */,
 				87031BAC2613D28700D5F7B9 /* SceneDelegate.swift in Sources */,
 				8712D401262D1996006636E7 /* Section+CoreDataProperties.swift in Sources */,
@@ -421,6 +425,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = YLX76P35RR;
 				INFOPLIST_FILE = SongSketch/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -440,6 +445,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = YLX76P35RR;
 				INFOPLIST_FILE = SongSketch/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
